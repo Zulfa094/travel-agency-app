@@ -1,103 +1,118 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.shortcuts import render, redirect
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
-from django.urls import reverse_lazy
 from .models import Destination, Package, Booking
-from .forms import SignupForm, BookingForm # Form Name SignupForm
-from django.contrib.auth.decorators import login_required # Import Decorator
+from .forms import BookingForm 
 from django.contrib.auth.mixins import LoginRequiredMixin # Import Mixin
 from django.contrib.auth.views import LoginView
 
 
-# Guest Views
 class Home(LoginView):
     template_name = 'home.html'
-    redirect_authenticated_user = True # If the user its authenticated goes to homepage
-    # def get_success_url(self):   # You need to create it for the login to work
-    #     return reverse_lazy('main_app:home')
+    redirect_authenticated_user = True
+    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['packages'] = Package.objects.all()  # Pass all packages
-        context['destinations'] = Destination.objects.all() # pass all destinations
+        context['packages'] = Package.objects.all()
+        context['destinations'] = Destination.objects.all()
         return context
-
 
 def about(request):
     return render(request, 'about.html')
 
 
 def signup(request):
-    error_message= ''
-    if request.method== 'POST':
-        form =SignupForm(request.POST) # Form Name SignupForm
+    error_message = ''
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('home') # Reditect the user to the home
+            return redirect('main_app:home')  
         else:
             error_message = 'Invalid sign up - try again'
-
-    form = SignupForm() # Form Name SignupForm
+    form = UserCreationForm()
     context = {'form': form, 'error_message': error_message}
     return render(request, 'signup.html', context)
 
-# Admin Views
-class PackageCreate(LoginRequiredMixin, CreateView):
-    model = Package
-    fields = ['name', 'description', 'price', 'destinations'] # add the destinations in the fields to render the form
-    success_url = reverse_lazy('main_app:home')
-
-class PackageUpdate(LoginRequiredMixin, UpdateView):
-    model = Package
-    fields = ['name', 'description', 'price', 'destinations']
-    success_url = reverse_lazy('main_app:home')
-
-class PackageDelete(LoginRequiredMixin, DeleteView):
-    model = Package
-    success_url = reverse_lazy('main_app:home')
-    template_name = 'package/package_confirm_delete.html'
-
+# Destination Views (Admin)
 class DestinationCreate(LoginRequiredMixin, CreateView):
     model = Destination
     fields = ['name', 'description']
-    success_url = reverse_lazy('main_app:home')
+    #success_url = reverse_lazy('main_app:home')
+    def get_success_url(self):
+        return redirect('main_app:home')
 
 class DestinationUpdate(LoginRequiredMixin, UpdateView):
     model = Destination
     fields = ['name', 'description']
-    success_url = reverse_lazy('main_app:home')
+    def get_success_url(self):
+        return redirect('main_app:destination_detail', pk=self.object.pk)
 
 class DestinationDelete(LoginRequiredMixin, DeleteView):
-    model = Destination
-    success_url = reverse_lazy('main_app:home')
+   model = Destination
+   def get_success_url(self):
+       return redirect('main_app:home')
+   template_name = 'main_app/destination_confirm_delete.html'
 
-class PackageDetail(DetailView):
-    model = Package
-    template_name = 'package/detail.html'
 
 class DestinationDetail(DetailView):
     model = Destination
-    template_name = 'destination/detail.html'
+    template_name = 'main_app/destination_detail.html'
 
-# Customer View
+# Package Views (Admin)
+class PackageCreate(LoginRequiredMixin, CreateView):
+    model = Package
+    fields = ['name', 'description', 'price', 'destinations']
+    #success_url = reverse_lazy('main_app:home')
+    def get_success_url(self):
+        return redirect('main_app:home')
+
+class PackageList(ListView):
+    model = Package
+    template_name = 'main_app/package_list.html'
+
+
+class PackageUpdate(LoginRequiredMixin, UpdateView):
+    model = Package
+    fields = ['name', 'description', 'price', 'destinations']
+    def get_success_url(self):
+        return redirect('main_app:package_detail', pk=self.object.pk)
+
+class PackageDelete(LoginRequiredMixin, DeleteView):
+   model = Package
+   def get_success_url(self):
+       return redirect('main_app:home')
+   template_name = 'main_app/package_confirm_delete.html'
+
+
+class PackageDetail(DetailView):
+    model = Package
+    template_name = 'main_app/package_detail.html'
+
+# Booking Views (Customer)
 class BookingCreate(LoginRequiredMixin, CreateView):
     model = Booking
     form_class = BookingForm
-    template_name = 'booking/form.html'  # Specify the template
+    template_name = 'main_app/booking_form.html'
+    
 
     def form_valid(self, form):
-        form.instance.user = self.request.user  # Associate the logged-in user
+        form.instance.user = self.request.user
         return super().form_valid(form)
-    
-    success_url = reverse_lazy('home')
+
+    def get_success_url(self):
+        return redirect('main_app:booking_detail', pk=self.object.pk)
 
 class BookingDetail(LoginRequiredMixin, DetailView):
     model= Booking
-    template_name= 'booking/detail.html'
+    template_name= 'main_app/booking_detail.html'
 
 class BookingDelete(LoginRequiredMixin, DeleteView):
     model= Booking
-    template_name= 'booking/booking_confirm_delete.html'
-    success_url = reverse_lazy('home')
+    def get_success_url(self):
+       return redirect('main_app:home')
+    template_name= 'main_app/booking_confirm_delete.html'

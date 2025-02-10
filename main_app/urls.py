@@ -9,7 +9,7 @@ urlpatterns = [
     path('', views.Home.as_view(), name='home'),  # Use built-in login view
     path('about/', views.about, name='about'),
     path('signup/', views.signup, name='signup'),
-    path('login/', auth_views.LoginView.as_view(), name='login'), #login path
+
 
     # CBV's for Create, Update, Delete Package
     path('packages/create/', views.PackageCreate.as_view(), name='package_create'),
@@ -25,6 +25,6 @@ urlpatterns = [
 
     path('bookings/create/', views.BookingCreate.as_view(), name='booking_create'),
     path('bookings/<int:pk>', views.BookingDetail.as_view(), name='booking_detail'),
-    path('bookings/<int:pk>/delete', views.BookingDelete.as_view(), name='booking_delete'), #added booking delete
+    path('bookings/<int:pk>/delete', views.BookingDelete.as_view(), name='booking_delete'),
     
 ]
