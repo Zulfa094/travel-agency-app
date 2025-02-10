@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}" />
+{% endblock %}
+{% block content %}
+    <h1>Welcome to Our Travel Agency!</h1>
+
+    <h2>Packages</h2>
+    <ul>
+        {% for package in packages %}
+            <li><a href="{% url 'main_app:package_detail' package.pk %}">{{ package.name }}</a> - ${{ package.price }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Destinations</h2>
+    <ul>
+        {% for destination in destinations %}
+            <li><a href="{% url 'main_app:destination_detail' destination.pk %}">{{ destination.name }}</a></li>
+        {% endfor %}
+    </ul>
+    {% if not user.is_authenticated %}
+        <h2>Login</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Login</button>
+        </form>
+
+        <p>Don't have an account? <a href="{% url 'main_app:signup' %}">Signup</a></p>
+    {% endif %}
+
+{% endblock %}

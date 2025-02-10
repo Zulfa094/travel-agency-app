@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Package Details</h1>
+    <h2>{{ package.name }}</h2>
+    <p>Description: {{ package.description }}</p>
+    <p>Price: ${{ package.price }}</p>
+    <h3>Destinations</h3>
+        <ul>
+            {% for destination in package.destinations.all %}
+                <li>{{ destination.name }}</li>
+            {% endfor %}
+        </ul>
+
+        {% if user.is_authenticated %}
+            <a href="{% url 'main_app:booking_create' %}">Book this Package</a>
+        {% else %}
+            <p>If you want to Book this Package you have to login, <a href="{% url 'login' %}">Login</a></p>
+        {% endif %}
+{% endblock %}

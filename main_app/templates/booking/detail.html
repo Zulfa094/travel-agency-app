@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Booking Detail</h1>
+    <p>Package: {{ booking.package.name }}</p>
+    <p>Booking Date: {{ booking.booking_date }}</p>
+    <p>Status: {{ booking.status }}</p>
+    <p>Booked By: {{ booking.user.username }}</p>
+    <p>Number of Guests: {{ booking.number_of_guests }}</p>
+    <p>Total Price: {{ booking.total_price }}</p>
+    <p>Contact Email: {{ booking.contact_email }}</p>
+    <p>Contact Phone: {{ booking.contact_phone }}</p>
+    <a href="{% url 'main_app:booking_delete' booking.id %}">Delete Booking</a>
+
+{% endblock %}
