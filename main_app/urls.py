@@ -3,11 +3,13 @@ from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
 
+
 app_name = "main_app"
 
 urlpatterns = [
-    path('', views.Home.as_view(), name='home'),  # Use built-in login view
+    path('', views.Home.as_view(), name='home'),  
     path('about/', views.about, name='about'),
+    path('login/', auth_views.LoginView.as_view(template_name='accounts/templates/registration/login.html'), name='login'),
     path('signup/', views.signup, name='signup'),
 
 
@@ -16,6 +18,7 @@ urlpatterns = [
     path('packages/<int:pk>/update', views.PackageUpdate.as_view(), name='package_update'),
     path('packages/<int:pk>/delete', views.PackageDelete.as_view(), name='package_delete'),
     path('packages/<int:pk>', views.PackageDetail.as_view(), name='package_detail'),
+    path('packages/', views.PackageList.as_view(), name='package_list'),
 
         # CBV's for Create, Update, Delete Destination
     path('destinations/create/', views.DestinationCreate.as_view(), name='destination_create'),

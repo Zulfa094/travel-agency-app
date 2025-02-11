@@ -5,15 +5,13 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="shortcut icon" type="image/png"   href=""/>
-    <link rel="stylesheet" href="{% static 'css/base.css' %}" />
+    {% comment %} <link rel="stylesheet" href="{% static 'css/base.css' %}" /> {% endcomment %}
     <title>Travel Agency</title>
     {% block head %} 
     {% endblock %}
   </head>
   <body>
     <header>
-      <div class="header-logo-container">
         <a href="{% url 'main_app:home' %}">
             <h1>Travel Agency</h1>
         </a>
@@ -21,9 +19,8 @@
       <nav>
         <ul>
           {% if user.is_authenticated %}
-            <li><a href="#">All Packages</a></li>
-            <li><a href="#">Add a Package</a></li>
-            <li><a href="#">Add a Destination</a></li>
+            <li><a href="{% url 'main_app:package_list' %}">All Packages</a></li>
+            <li><a href="{% url 'main_app:booking_create' %}">Book your Journey</a></li>
             <li><a href="{% url 'main_app:about' %}">About</a></li>
 
           <li>
@@ -35,7 +32,7 @@
           </li>
           {% else %}
             <li><a href="{% url 'main_app:about' %}">About</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
+            <li><a href="{% url 'main_app:home' %}">Login</a></li>
             <li><a href="{% url 'main_app:signup' %}">Sign Up</a></li>
           {% endif %}
         </ul>

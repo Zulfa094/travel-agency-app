@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Destination, Package, Booking
-from django.contrib.auth.admin import UserAdmin
+# from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
 # class ProfileInline(admin.StackedInline):
@@ -24,8 +24,8 @@ from django.contrib.auth.models import User
 #         return super(CustomUserAdmin, self).get_inline_instances(request, obj)
 
 
-admin.site.unregister(User)
-admin.site.register(User)
+# admin.site.unregister(User)
+# admin.site.register(User)
 
 admin.site.register(Destination)
 admin.site.register(Package)

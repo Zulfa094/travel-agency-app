@@ -2,17 +2,17 @@
 {% load static %}
 
 {% block head %}
-<link rel="stylesheet" href="{% static 'css/package/package-index.css' %}" />
+{% comment %} <link rel="stylesheet" href="{% static 'css/package/package-index.css' %}" /> {% endcomment %}
 {% endblock %}
 
 {% block content %}
-<section class="page-header">
+<section>
     <h1>All Packages</h1>
 </section>
 
-<section class="card-container">
+<section>
     {% for package in object_list %}
-    <div class="card">
+    <div>
         <a href="{% url 'main_app:package_detail' package.id %}">
             <div class="card-content">
                 <h2>{{ package.name }}</h2>
