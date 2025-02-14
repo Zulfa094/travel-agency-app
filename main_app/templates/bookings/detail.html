@@ -10,6 +10,6 @@
     <p>Total Price: {{ booking.total_price }}</p>
     <p>Contact Email: {{ booking.contact_email }}</p>
     <p>Contact Phone: {{ booking.contact_phone }}</p>
-    <a href="{% url 'main_app:booking_delete' booking.id %}">Delete Booking</a>
+    <a href="{% url 'booking_delete' booking.id %}">Delete Booking</a>
 
 {% endblock %}

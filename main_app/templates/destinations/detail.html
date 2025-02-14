@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="destination-container">
+    <div class="destination-header">
+        <h1>{{ destination.name }}</h1>
+        {% if user.is_superuser %}
+        <div class="admin-controls">
+            <a href="{% url 'destination_update' destination.pk %}" class="btn btn-warning">Edit</a>
+            <a href="{% url 'destination_delete' destination.pk %}" class="btn btn-danger">Delete</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="destination-content">
+        <div class="description-section">
+            <h2>Description</h2>
+            <p>{{ destination.description }}</p>
+        </div>
+
+        {% if destination.package_set.all %}
+        <div class="packages-section">
+            <h2>Available Packages</h2>
+            <div class="packages-grid">
+                {% for package in destination.package_set.all %}
+                <div class="package-card">
+                    <h3>{{ package.name }}</h3>
+                    <p>{{ package.description|truncatewords:30 }}</p>
+                    <p class="price">Price: ${{ package.price }}</p>
+                    <a href="{% url 'package_detail' package.pk %}" class="btn btn-primary">View Package</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .destination-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .destination-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #eee;
+    }
+
+    .admin-controls {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .destination-content {
+        display: grid;
+        gap: 2rem;
+    }
+
+    .description-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .packages-section {
+        margin-top: 2rem;
+    }
+
+    .packages-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .package-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .package-card h3 {
+        margin-top: 0;
+        color: #333;
+    }
+
+    .price {
+        font-weight: bold;
+        color: #28a745;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn:hover {
+        opacity: 0.9;
+    }
+
+    @media (max-width: 768px) {
+        .destination-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .packages-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

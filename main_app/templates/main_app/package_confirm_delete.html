@@ -1,0 +1,17 @@
+{% extends 'base.html' %} 
+{% load static %} 
+{% block content %}
+
+<div>
+  <h1>Delete package?</h1>
+  
+</div>
+<h2>Are you sure you want to delete {{ object.name }}?</h2>
+
+<form action="" method="post" class="form">
+  {% csrf_token %}
+  <a href="{% url 'package_detail' object.id %}" > Cancel </a>
+  <button type="submit">Yes - Delete!</button>
+</form>
+
+{% endblock %}

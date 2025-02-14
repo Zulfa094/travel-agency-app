@@ -12,16 +12,16 @@
   </head>
   <body>
     <header>
-        <a href="{% url 'main_app:home' %}">
+        <a href="{% url 'home' %}">
             <h1>Travel Agency</h1>
         </a>
       </div>
       <nav>
         <ul>
           {% if user.is_authenticated %}
-            <li><a href="{% url 'main_app:package_list' %}">All Packages</a></li>
-            <li><a href="{% url 'main_app:booking_create' %}">Book your Journey</a></li>
-            <li><a href="{% url 'main_app:about' %}">About</a></li>
+            <li><a href="{% url 'home' %}">All Packages</a></li>
+            {% comment %} <li><a href="{% url 'booking_create' %}">Book your Journey</a></li> {% endcomment %}
+            <li><a href="{% url 'about' %}">About</a></li>
 
           <li>
             <form id="logout-form" method="post" action="{% url 'logout' %}">
@@ -31,9 +31,9 @@
 
           </li>
           {% else %}
-            <li><a href="{% url 'main_app:about' %}">About</a></li>
-            <li><a href="{% url 'main_app:home' %}">Login</a></li>
-            <li><a href="{% url 'main_app:signup' %}">Sign Up</a></li>
+            <li><a href="{% url 'about' %}">About</a></li>
+            <li><a href="{% url 'home' %}">Login</a></li>
+            <li><a href="{% url 'signup' %}">Sign Up</a></li>
           {% endif %}
         </ul>
       </nav>

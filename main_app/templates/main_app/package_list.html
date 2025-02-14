@@ -1,8 +1,7 @@
-{% extends 'base.html' %}
+{% comment %} {% extends 'base.html' %}
 {% load static %}
 
 {% block head %}
-{% comment %} <link rel="stylesheet" href="{% static 'css/package/package-index.css' %}" /> {% endcomment %}
 {% endblock %}
 
 {% block content %}
@@ -13,8 +12,8 @@
 <section>
     {% for package in object_list %}
     <div>
-        <a href="{% url 'main_app:package_detail' package.id %}">
-            <div class="card-content">
+        <a href="{% url 'package_detail' package.id %}">
+            <div>
                 <h2>{{ package.name }}</h2>
                 <p>{{ package.description }}</p>
                 <p>Price: ${{ package.price }}</p>
@@ -28,4 +27,4 @@
     </div>
     {% endfor %}
 </section>
-{% endblock %}
+{% endblock %} {% endcomment %}

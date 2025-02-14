@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="package-container">
+    <div class="package-header">
+        <h1>{{ object.name }}</h1>
+        {% if user.is_superuser %}
+        <div class="admin-controls">
+            <a href="{% url 'package_update' object.pk %}" class="btn btn-warning">Edit Package</a>
+            <a href="{% url 'package_delete' object.pk %}" class="btn btn-danger">Delete Package</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="package-content">
+        <div class="main-info">
+            <div class="description-section">
+                <h2>Description</h2>
+                <p>{{ object.description }}</p>
+            </div>
+
+            <div class="price-section">
+                <h2>Price</h2>
+                <p class="price">${{ object.price }}</p>
+            </div>
+        </div>
+
+        <div class="destinations-section">
+            <h2>Available Destinations</h2>
+            <div class="destinations-grid">
+                {% for destination in object.destinations.all %}
+                <div class="destination-card">
+                    <h3>{{ destination.name }}</h3>
+                    <p>{{ destination.description }}</p>
+                    {% if user.is_authenticated and not user.is_superuser %}
+                        <a href="{% url 'booking_create' destination.id %}" class="btn btn-primary">Book This Destination</a>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p>No destinations available in this package.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if user.is_authenticated and not user.is_superuser %}
+        <div class="booking-section">
+            <h2>Book This Package</h2>
+            {% comment %} <a href="{% url 'booking_create' %}" class="btn btn-primary">Book Now</a>
+        </div> {% endcomment %}
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .package-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .package-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .destinations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .destination-card {
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 4px;
+        text-decoration: none;
+        color: white;
+        margin: 5px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+    }
+
+    .price {
+        font-size: 1.5em;
+        color: #28a745;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
