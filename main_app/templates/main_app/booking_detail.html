@@ -2,82 +2,51 @@
 
 {% block content %}
 <div class="booking-detail-container">
-    <h1>Booking Details</h1>
+    <div class="booking-header">
+        <h1>Booking Details</h1>
+        <div class="booking-status status-{{ object.status }}">
+            Status: {{ object.status|title }}
+        </div>
+    </div>
 
     <div class="booking-card">
-        <div class="status-banner status-{{ object.status }}">
-            Status: {{ object.get_status_display }}
+        <div class="package-info">
+            <h2>{{ object.package.name }}</h2>
+            <p class="price">${{ object.package.price }}</p>
         </div>
 
         <div class="booking-info">
-            <h2>{{ object.package.name }}</h2>
-            <div class="info-grid">
-                <div class="info-item">
-                    <label>Booking Date:</label>
-                    <span>{{ object.booking_date }}</span>
+            <p><strong>Booking Date:</strong> {{ object.booking_date }}</p>
+            <p><strong>Number of Guests:</strong> {{ object.number_of_guests }}</p>
+            <p><strong>Total Price:</strong> ${{ object.total_price }}</p>
+            <p><strong>Contact Email:</strong> {{ object.contact_email }}</p>
+            {% if object.contact_phone %}
+            <p><strong>Contact Phone:</strong> {{ object.contact_phone }}</p>
+            {% endif %}
+        </div>
+
+        <div class="destinations-section">
+            <h3>Destinations Included</h3>
+            <div class="destinations-list">
+                {% for destination in object.package.destinations.all %}
+                <div class="destination-item">
+                    <h4>{{ destination.name }}</h4>
+                    <p>{{ destination.description|truncatewords:30 }}</p>
                 </div>
-                <div class="info-item">
-                    <label>Number of Guests:</label>
-                    <span>{{ object.number_of_guests }}</span>
-                </div>
-                <div class="info-item">
-                    <label>Total Price:</label>
-                    <span>${{ object.total_price }}</span>
-                </div>
-                <div class="info-item">
-                    <label>Contact Email:</label>
-                    <span>{{ object.contact_email }}</span>
-                </div>
-                <div class="info-item">
-                    <label>Contact Phone:</label>
-                    <span>{{ object.contact_phone }}</span>
-                </div>
-                <div class="info-item">
-                    <label>Created:</label>
-                    <span>{{ object.created_at|date:"F j, Y, P" }}</span>
-                </div>
+                {% endfor %}
             </div>
         </div>
 
-        {% if object.status == 'pending' %}
-        <div class="status-message pending">
-            <p>Your booking is currently pending approval. We will notify you once it's approved.</p>
-        </div>
-        {% elif object.status == 'approved' %}
-        <div class="status-message approved">
-            <p>Your booking has been approved! We look forward to hosting you.</p>
-        </div>
-        {% elif object.status == 'rejected' %}
-        <div class="status-message rejected">
-            <p>We're sorry, but this booking has been rejected. Please contact us for more information.</p>
-        </div>
-        {% endif %}
-
-        {% if can_manage and object.status == 'pending' %}
-        <div class="admin-actions">
-            <button class="btn btn-success approve-btn" data-booking-id="{{ object.id }}">Approve Booking</button>
-            <button class="btn btn-danger reject-btn" data-booking-id="{{ object.id }}">Reject Booking</button>
-        </div>
-        {% endif %}
-    </div>
-
-    {% if user == object.user or user.is_superuser %}
-    <div class="notifications-section">
-        <h2>Booking Updates</h2>
-        <div class="notifications-list">
-            {% for notification in object.notifications.all %}
-                {% if user.is_superuser and notification.is_for_superuser or not notification.is_for_superuser and user == notification.recipient %}
-                <div class="notification-card {% if not notification.is_read %}unread{% endif %}">
-                    <p>{{ notification.message }}</p>
-                    <small>{{ notification.created_at|timesince }} ago</small>
-                </div>
-                {% endif %}
-            {% empty %}
-            <p>No updates for this booking yet.</p>
-            {% endfor %}
+        <div class="status-message {% if object.status == 'pending' %}pending{% elif object.status == 'approved' %}approved{% else %}rejected{% endif %}">
+            {% if object.status == 'pending' %}
+                <p>Your booking is currently under review. We will notify you once it's approved.</p>
+            {% elif object.status == 'approved' %}
+                <p>Great news! Your booking has been approved. We look forward to hosting you!</p>
+            {% else %}
+                <p>We regret to inform you that your booking has been rejected. Please contact us for more information.</p>
+            {% endif %}
         </div>
     </div>
-    {% endif %}
 </div>
 
 <style>
@@ -87,58 +56,98 @@
         padding: 20px;
     }
 
-    .booking-card {
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        overflow: hidden;
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
     }
 
-    .status-banner {
-        padding: 10px;
-        color: white;
-        text-align: center;
+    .booking-status {
+        padding: 8px 16px;
+        border-radius: 4px;
         font-weight: bold;
     }
 
     .status-pending {
         background-color: #ffc107;
+        color: #000;
     }
 
     .status-approved {
         background-color: #28a745;
+        color: white;
     }
 
     .status-rejected {
         background-color: #dc3545;
+        color: white;
+    }
+
+    .booking-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .package-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .price {
+        font-size: 1.5em;
+        color: #28a745;
+        font-weight: bold;
     }
 
     .booking-info {
-        padding: 20px;
+        margin-bottom: 30px;
     }
 
-    .info-grid {
+    .booking-info p {
+        margin: 10px 0;
+        color: #2c3e50;
+    }
+
+    .destinations-section {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .destinations-list {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 20px;
-        margin-top: 20px;
+        margin-top: 15px;
     }
 
-    .info-item {
-        margin-bottom: 10px;
+    .destination-item {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
     }
 
-    .info-item label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #666;
+    .destination-item h4 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+    }
+
+    .destination-item p {
+        margin: 0;
+        color: #6c757d;
     }
 
     .status-message {
+        margin-top: 30px;
         padding: 15px;
-        margin: 20px;
-        border-radius: 4px;
+        border-radius: 8px;
+        text-align: center;
     }
 
     .status-message.pending {
@@ -158,108 +167,5 @@
         border: 1px solid #f5c6cb;
         color: #721c24;
     }
-
-    .admin-actions {
-        padding: 20px;
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-    }
-
-    .btn {
-        padding: 8px 16px;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
-        color: white;
-    }
-
-    .btn-success {
-        background-color: #28a745;
-    }
-
-    .btn-danger {
-        background-color: #dc3545;
-    }
-
-    .notifications-section {
-        margin-top: 30px;
-    }
-
-    .notifications-list {
-        margin-top: 20px;
-    }
-
-    .notification-card {
-        background-color: #fff;
-        padding: 15px;
-        border-radius: 4px;
-        margin-bottom: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .notification-card.unread {
-        border-left: 4px solid #007bff;
-    }
-
-    .notification-card small {
-        color: #666;
-        display: block;
-        margin-top: 5px;
-    }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const approveBtn = document.querySelector('.approve-btn');
-    const rejectBtn = document.querySelector('.reject-btn');
-
-    if (approveBtn) {
-        approveBtn.addEventListener('click', function() {
-            const bookingId = this.dataset.bookingId;
-            handleBookingAction(bookingId, 'approve');
-        });
-    }
-
-    if (rejectBtn) {
-        rejectBtn.addEventListener('click', function() {
-            const bookingId = this.dataset.bookingId;
-            handleBookingAction(bookingId, 'reject');
-        });
-    }
-
-    function handleBookingAction(bookingId, action) {
-        fetch(`/bookings/${bookingId}/${action}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Refresh the page to show updated status
-                location.reload();
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-});
-</script>
 {% endblock %}

@@ -30,6 +30,7 @@ class Home(ListView):
     model = Package
     template_name = 'home.html'
     context_object_name = 'packages'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['packages'] = Package.objects.all()
@@ -79,11 +80,20 @@ class DestinationUpdate(LoginRequiredMixin, SuperUserRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse('destination_detail', kwargs={'pk': self.object.pk})
 
-class DestinationDelete(LoginRequiredMixin, SuperUserRequiredMixin, DeleteView):
+class DestinationDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Destination
-    
-    def get_success_url(self):
-        return reverse('destination_list')
+    success_url = '/'  # Redirect to home page after deletion
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def delete(self, request, *args, **kwargs):
+        destination = self.get_object()
+        # Remove the destination from all packages
+        destination.package_set.clear()
+        # Then delete the destination
+        response = super().delete(request, *args, **kwargs)
+        return JsonResponse({'status': 'success'}) if request.is_ajax() else response
     
 class DestinationDetail(LoginRequiredMixin, DetailView):
     model = Destination
@@ -108,12 +118,22 @@ class PackageUpdate(SuperUserRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse('package_detail', kwargs={'pk': self.object.pk})
 
-class PackageDelete(SuperUserRequiredMixin, DeleteView):
+class PackageDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Package
-    
-    def get_success_url(self):
-        return reverse('home')
-    
+    success_url = '/'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def delete(self, request, *args, **kwargs):
+        package = self.get_object()
+        # Delete associated bookings
+        package.booking_set.all().delete()
+        # Delete the package
+        response = super().delete(request, *args, **kwargs)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'success'})
+        return response
 
 class PackageDetail(DetailView):
     model = Package
@@ -130,12 +150,6 @@ class PackageUpdate(LoginRequiredMixin, UpdateView):
     fields = ['name', 'description', 'price', 'destinations']
     def get_success_url(self):
         return redirect('package_detail', pk=self.object.pk)
-
-class PackageDelete(LoginRequiredMixin, DeleteView):
-   model = Package
-   def get_success_url(self):
-       return redirect('home')
-   template_name = 'package_confirm_delete.html'
 
 class PackageList(ListView):
     model = Package
@@ -189,13 +203,34 @@ class BookingDetail(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['can_manage'] = self.request.user.is_superuser
+        context['notifications'] = Notification.objects.filter(
+            booking=self.object,
+            recipient=self.request.user,
+            is_for_superuser=False
+        ).order_by('-created_at')
         return context
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Booking.objects.all()
+        return Booking.objects.filter(user=self.request.user)
 
 class BookingDelete(LoginRequiredMixin, DeleteView):
     model = Booking
     def get_success_url(self):
        return redirect('home')
     template_name = 'booking_confirm_delete.html'
+
+class BookingList(LoginRequiredMixin, ListView):
+    model = Booking
+    template_name = 'main_app/booking_list.html'
+    context_object_name = 'bookings'
+
+    def get_queryset(self):
+        # Regular users see their own bookings, superusers see all bookings
+        if self.request.user.is_superuser:
+            return Booking.objects.all().order_by('-booking_date')
+        return Booking.objects.filter(user=self.request.user).order_by('-booking_date')
 
 class ManageBookings(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'main_app/manage_bookings.html'
@@ -215,41 +250,43 @@ class ManageBookings(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
 @login_required
 @user_passes_test(is_superuser)
-@require_POST
 def approve_booking(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id)
-    booking.status = Booking.STATUS_APPROVED
-    booking.save()
-    
-    # Create notification for the booking user
-    Notification.objects.create(
-        booking=booking,
-        message=f"Your booking has been approved",
-        notification_type='booking_approved',
-        recipient=booking.user,  
-        is_for_superuser=False
-    )
-    
-    return JsonResponse({'status': 'success'})
+    if request.method == 'POST':
+        booking = get_object_or_404(Booking, pk=booking_id)
+        booking.status = 'approved'
+        booking.save()
+        
+        # Create notification for the user
+        Notification.objects.create(
+            booking=booking,
+            recipient=booking.user,
+            message=f"Your booking for {booking.package.name} has been approved!",
+            notification_type='booking_approved',
+            is_for_superuser=False
+        )
+        
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)
 
 @login_required
 @user_passes_test(is_superuser)
-@require_POST
 def reject_booking(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id)
-    booking.status = Booking.STATUS_REJECTED
-    booking.save()
-    
-    # Create notification for the booking user
-    Notification.objects.create(
-        booking=booking,
-        message=f"Your booking has been rejected",
-        notification_type='booking_rejected',
-        recipient=booking.user,  
-        is_for_superuser=False
-    )
-    
-    return JsonResponse({'status': 'success'})
+    if request.method == 'POST':
+        booking = get_object_or_404(Booking, pk=booking_id)
+        booking.status = 'rejected'
+        booking.save()
+        
+        # Create notification for the user
+        Notification.objects.create(
+            booking=booking,
+            recipient=booking.user,
+            message=f"Your booking for {booking.package.name} has been rejected.",
+            notification_type='booking_rejected',
+            is_for_superuser=False
+        )
+        
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)
 
 @login_required
 def mark_notification_read(request, notification_id):

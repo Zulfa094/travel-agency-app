@@ -7,7 +7,7 @@
         {% if user.is_superuser %}
         <div class="admin-controls">
             <a href="{% url 'package_update' object.pk %}" class="btn btn-warning">Edit Package</a>
-            <a href="{% url 'package_delete' object.pk %}" class="btn btn-danger">Delete Package</a>
+            <button onclick="confirmDelete('package')" class="btn btn-danger">Delete Package</button>
         </div>
         {% endif %}
     </div>
@@ -26,14 +26,32 @@
         </div>
 
         <div class="destinations-section">
-            <h2>Available Destinations</h2>
+            <div class="section-header">
+                <h2>Destinations</h2>
+                {% if user.is_superuser %}
+                <a href="{% url 'destination_create' %}" class="btn btn-success">Add New Destination</a>
+                {% endif %}
+            </div>
             <div class="destinations-grid">
                 {% for destination in object.destinations.all %}
                 <div class="destination-card">
-                    <h3>{{ destination.name }}</h3>
+                    <div class="destination-header">
+                        <h3>{{ destination.name }}</h3>
+                        {% if user.is_superuser %}
+                        <div class="destination-controls">
+                            <a href="{% url 'destination_update' destination.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                            <button onclick="confirmDelete('destination', {{ destination.pk }}, '{{ destination.name }}')" class="btn btn-danger btn-sm">Delete</button>
+                        </div>
+                        {% endif %}
+                    </div>
                     <p>{{ destination.description }}</p>
+                    {% if destination.image_url %}
+                    <div class="destination-image">
+                        <img src="{{ destination.image_url }}" alt="{{ destination.name }}">
+                    </div>
+                    {% endif %}
                     {% if user.is_authenticated and not user.is_superuser %}
-                        <a href="{% url 'booking_create' destination.id %}" class="btn btn-primary">Book This Destination</a>
+                    <a href="{% url 'booking_create' object.pk %}" class="btn btn-primary">Book This Package</a>
                     {% endif %}
                 </div>
                 {% empty %}
@@ -41,15 +59,42 @@
                 {% endfor %}
             </div>
         </div>
-
-        {% if user.is_authenticated and not user.is_superuser %}
-        <div class="booking-section">
-            <h2>Book This Package</h2>
-            {% comment %} <a href="{% url 'booking_create' %}" class="btn btn-primary">Book Now</a>
-        </div> {% endcomment %}
-        {% endif %}
     </div>
 </div>
+
+{% if user.is_superuser %}
+<!-- Delete Package Modal -->
+<div id="packageDeleteModal" class="modal">
+    <div class="modal-content">
+        <h2>Confirm Package Deletion</h2>
+        <p>Are you sure you want to delete this package?</p>
+        <p class="warning">This action cannot be undone and will remove all associated bookings.</p>
+        <div class="modal-buttons">
+            <form id="packageDeleteForm" action="{% url 'package_delete' object.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+            <button onclick="closeModal('package')" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Destination Modal -->
+<div id="destinationDeleteModal" class="modal">
+    <div class="modal-content">
+        <h2>Confirm Destination Deletion</h2>
+        <p id="destinationDeleteMessage"></p>
+        <p class="warning">This action cannot be undone.</p>
+        <div class="modal-buttons">
+            <form id="destinationDeleteForm" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+            <button onclick="closeModal('destination')" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <style>
     .package-container {
@@ -63,6 +108,13 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
     }
 
     .destinations-grid {
@@ -80,6 +132,30 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
+    .destination-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .destination-controls {
+        display: flex;
+        gap: 5px;
+    }
+
+    .destination-image {
+        margin: 15px 0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .destination-image img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
     .btn {
         display: inline-block;
         padding: 8px 16px;
@@ -87,6 +163,13 @@
         text-decoration: none;
         color: white;
         margin: 5px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-sm {
+        padding: 4px 8px;
+        font-size: 0.9em;
     }
 
     .btn-primary {
@@ -102,10 +185,144 @@
         background-color: #dc3545;
     }
 
+    .btn-success {
+        background-color: #28a745;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+    }
+
     .price {
         font-size: 1.5em;
         color: #28a745;
         font-weight: bold;
     }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 500px;
+        text-align: center;
+    }
+
+    .warning {
+        color: #dc3545;
+        font-weight: bold;
+        margin: 15px 0;
+    }
+
+    .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .package-header,
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .destination-header {
+            flex-direction: column;
+        }
+
+        .destination-controls {
+            margin-top: 10px;
+        }
+
+        .btn {
+            width: 100%;
+            margin: 5px 0;
+        }
+    }
 </style>
+
+<script>
+    function confirmDelete(type, id, name) {
+        if (type === 'package') {
+            const modal = document.getElementById('packageDeleteModal');
+            const form = document.getElementById('packageDeleteForm');
+            
+            modal.style.display = 'block';
+            
+            // Handle package form submission
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Redirect to home page after successful deletion
+                        window.location.href = '/';
+                    } else {
+                        console.error('Error deleting package');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            };
+        } else if (type === 'destination') {
+            const modal = document.getElementById('destinationDeleteModal');
+            const message = document.getElementById('destinationDeleteMessage');
+            const form = document.getElementById('destinationDeleteForm');
+            
+            message.textContent = `Are you sure you want to delete ${name}?`;
+            form.action = `/destinations/${id}/delete/`;
+            modal.style.display = 'block';
+
+            // Handle destination form submission
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Refresh the page to show updated destination list
+                        window.location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            };
+        }
+    }
+
+    function closeModal(type) {
+        document.getElementById(type + 'DeleteModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    }
+</script>
 {% endblock %}

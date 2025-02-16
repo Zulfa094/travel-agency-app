@@ -5,46 +5,118 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    {% comment %} <link rel="stylesheet" href="{% static 'css/base.css' %}" /> {% endcomment %}
     <title>Travel Agency</title>
     {% block head %} 
     {% endblock %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-brand a {
+            color: white;
+            font-size: 1.5rem;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .logout-form {
+            margin: 0;
+            padding: 0;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            font-size: 1em;
+            cursor: pointer;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .nav-brand {
+                margin-bottom: 1rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .nav-link, .logout-btn {
+                width: 100%;
+                text-align: center;
+                padding: 10px;
+            }
+
+            .logout-form {
+                width: 100%;
+            }
+        }
+    </style>
   </head>
   <body>
     <header>
-        <a href="{% url 'home' %}">
-            <h1>Travel Agency</h1>
-        </a>
-      </div>
-      <nav>
-        <ul>
+      <nav class="navbar">
+        <div class="nav-brand">
+          <a href="{% url 'home' %}">Travel Agency</a>
+        </div>
+        <div class="nav-links">
           {% if user.is_authenticated %}
-            <li><a href="{% url 'home' %}">All Packages</a></li>
-            {% comment %} <li><a href="{% url 'booking_create' %}">Book your Journey</a></li> {% endcomment %}
-            <li><a href="{% url 'about' %}">About</a></li>
             {% if user.is_superuser %}
-                <li>
-                    <a href="{% url 'manage_bookings' %}">
-                        Pending Bookings 
-                        {% if pending_count %}
-                        <span class="badge badge-warning">{{ pending_count }}</span>
-                        {% endif %}
-                    </a>
-                </li>
+            <a href="{% url 'manage_bookings' %}" class="nav-link">Manage Bookings</a>
+            <a href="{% url 'package_create' %}" class="nav-link">Add Package</a>
+            <a href="{% url 'destination_create' %}" class="nav-link">Add Destination</a>
+            {% else %}
+            <a href="{% url 'booking_list' %}" class="nav-link">My Bookings</a>
             {% endif %}
-            <li>
-                <form id="logout-form" method="post" action="{% url 'logout' %}">
-                  {% csrf_token %}
-                  <button type="submit">Log out</button>
-                </form>
-
-            </li>
+            <form method="post" action="{% url 'logout' %}" class="logout-form">
+              {% csrf_token %}
+              <button type="submit" class="nav-link logout-btn">Log Out</button>
+            </form>
           {% else %}
-            <li><a href="{% url 'about' %}">About</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-            <li><a href="{% url 'signup' %}">Sign Up</a></li>
+            <a href="{% url 'signup' %}" class="nav-link">Sign Up</a>
+            <a href="{% url 'login' %}" class="nav-link">Log In</a>
           {% endif %}
-        </ul>
+        </div>
       </nav>
     </header>
     <main>
