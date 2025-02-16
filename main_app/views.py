@@ -30,20 +30,23 @@ class Home(ListView):
     model = Package
     template_name = 'home.html'
     context_object_name = 'packages'
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        # Add notifications for superusers
-        if self.request.user.is_authenticated and self.request.user.is_superuser:
-            context['pending_bookings'] = Booking.objects.filter(status='pending')
-            context['notifications'] = Notification.objects.filter(
-                recipient=self.request.user,
-                is_for_superuser=True,
-                is_read=False
-            ).order_by('-created_at')
-        
+        context['packages'] = Package.objects.all()
+        context['destinations'] = Destination.objects.all()
         return context
+    
+        
+       
+        # if self.request.user.is_authenticated and self.request.user.is_superuser:
+        #     context['pending_bookings'] = Booking.objects.filter(status='pending')
+        #     context['notifications'] = Notification.objects.filter(
+        #         recipient=self.request.user,
+        #         is_for_superuser=True,
+        #         is_read=False
+        #     ).order_by('-created_at')
+        
+        # return context
 
 def about(request):
     return render(request, 'about.html')
