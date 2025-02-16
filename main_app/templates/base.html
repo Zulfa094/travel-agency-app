@@ -22,14 +22,23 @@
             <li><a href="{% url 'home' %}">All Packages</a></li>
             {% comment %} <li><a href="{% url 'booking_create' %}">Book your Journey</a></li> {% endcomment %}
             <li><a href="{% url 'about' %}">About</a></li>
+            {% if user.is_superuser %}
+                <li>
+                    <a href="{% url 'manage_bookings' %}">
+                        Pending Bookings 
+                        {% if pending_count %}
+                        <span class="badge badge-warning">{{ pending_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+            {% endif %}
+            <li>
+                <form id="logout-form" method="post" action="{% url 'logout' %}">
+                  {% csrf_token %}
+                  <button type="submit">Log out</button>
+                </form>
 
-          <li>
-            <form id="logout-form" method="post" action="{% url 'logout' %}">
-              {% csrf_token %}
-              <button type="submit">Log out</button>
-            </form>
-
-          </li>
+            </li>
           {% else %}
             <li><a href="{% url 'about' %}">About</a></li>
             <li><a href="{% url 'home' %}">Login</a></li>

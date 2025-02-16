@@ -4,15 +4,40 @@
 <div class="booking-container">
     <h1>Book your Journey</h1>
     
-    <div class="destination-info">
-        <h2>Booking for: {{ destination.name }}</h2>
-        <p>{{ destination.description }}</p>
+    <div class="package-info">
+        <h2>Booking for: {{ package.name }}</h2>
+        <p>{{ package.description }}</p>
+        {% if package.price %}
+        <p class="price">Price per person: ${{ package.price }}</p>
+        {% endif %}
     </div>
 
     <form method="POST" class="booking-form">
         {% csrf_token %}
         <div class="form-group">
-            {{ form.as_p }}
+            {% for field in form %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {% if field.name == 'booking_date' %}
+                        <input type="date" 
+                               name="{{ field.name }}" 
+                               id="{{ field.id_for_label }}"
+                               class="form-control"
+                               min="{{ today|date:'Y-m-d' }}"
+                               required>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+                    {% if field.help_text %}
+                        <small class="help-text">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="error-message">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
         </div>
         <button type="submit" class="btn btn-primary">Confirm Booking</button>
     </form>
@@ -25,11 +50,18 @@
         padding: 20px;
     }
 
-    .destination-info {
+    .package-info {
         background-color: #f8f9fa;
         padding: 20px;
         border-radius: 8px;
         margin-bottom: 20px;
+    }
+
+    .price {
+        font-size: 1.2em;
+        color: #28a745;
+        font-weight: bold;
+        margin-top: 10px;
     }
 
     .booking-form {
@@ -43,22 +75,41 @@
         margin-bottom: 20px;
     }
 
-    .form-group p {
-        margin-bottom: 15px;
+    .form-field {
+        margin-bottom: 20px;
     }
 
-    .form-group label {
+    .form-field label {
         display: block;
         margin-bottom: 5px;
         font-weight: bold;
     }
 
-    .form-group input,
-    .form-group textarea {
+    .form-field input,
+    .form-field textarea,
+    .form-field select {
         width: 100%;
         padding: 8px;
         border: 1px solid #ddd;
         border-radius: 4px;
+        font-size: 16px;
+    }
+
+    .form-field input[type="date"] {
+        padding: 7px;
+    }
+
+    .help-text {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .error-message {
+        color: #dc3545;
+        margin-top: 5px;
+        font-size: 0.9em;
     }
 
     .btn {
@@ -69,6 +120,7 @@
         color: white;
         border: none;
         cursor: pointer;
+        font-size: 16px;
     }
 
     .btn-primary {

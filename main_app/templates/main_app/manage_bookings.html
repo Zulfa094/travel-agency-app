@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="manage-bookings-container">
+    <div class="header">
+        <h1>Manage Bookings</h1>
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Pending Bookings</h3>
+                <p class="count">{{ pending_bookings|length }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Unread Notifications</h3>
+                <p class="count">{{ notifications|length }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if pending_bookings %}
+    <div class="bookings-section">
+        <h2>Pending Bookings</h2>
+        <div class="bookings-grid">
+            {% for booking in pending_bookings %}
+            <div class="booking-card">
+                <div class="booking-header">
+                    <h3>{{ booking.package.name }}</h3>
+                    <span class="status-badge status-pending">Pending</span>
+                </div>
+                <div class="booking-info">
+                    <p><strong>Customer:</strong> {{ booking.user.username }}</p>
+                    <p><strong>Date:</strong> {{ booking.booking_date }}</p>
+                    <p><strong>Guests:</strong> {{ booking.number_of_guests }}</p>
+                    <p><strong>Contact:</strong> {{ booking.contact_email }}</p>
+                    {% if booking.contact_phone %}
+                    <p><strong>Phone:</strong> {{ booking.contact_phone }}</p>
+                    {% endif %}
+                </div>
+                <div class="booking-actions">
+                    <button class="btn btn-success approve-btn" data-booking-id="{{ booking.id }}">
+                        Approve
+                    </button>
+                    <button class="btn btn-danger reject-btn" data-booking-id="{{ booking.id }}">
+                        Reject
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="no-bookings">
+        <p>No pending bookings at the moment.</p>
+    </div>
+    {% endif %}
+
+    {% if notifications %}
+    <div class="notifications-section">
+        <h2>Recent Notifications</h2>
+        <div class="notifications-list">
+            {% for notification in notifications %}
+            <div class="notification-card {% if not notification.is_read %}unread{% endif %}">
+                <div class="notification-content">
+                    <p>{{ notification.message }}</p>
+                    <small>{{ notification.created_at|timesince }} ago</small>
+                </div>
+                <button class="mark-read-btn" data-notification-id="{{ notification.id }}">
+                    Mark as Read
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .manage-bookings-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .header {
+        margin-bottom: 30px;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .stat-card {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .count {
+        font-size: 2em;
+        font-weight: bold;
+        color: #007bff;
+        margin: 10px 0 0;
+    }
+
+    .bookings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .booking-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .booking-header h3 {
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-weight: bold;
+    }
+
+    .status-pending {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .booking-info p {
+        margin: 8px 0;
+        color: #2c3e50;
+    }
+
+    .booking-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .notifications-section {
+        margin-top: 40px;
+    }
+
+    .notifications-list {
+        display: grid;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .notification-card {
+        background-color: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .notification-card.unread {
+        border-left: 4px solid #007bff;
+    }
+
+    .notification-content {
+        flex-grow: 1;
+    }
+
+    .notification-content small {
+        display: block;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+    .mark-read-btn {
+        padding: 4px 8px;
+        border: 1px solid #007bff;
+        background: none;
+        color: #007bff;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .mark-read-btn:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .no-bookings {
+        text-align: center;
+        padding: 40px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 768px) {
+        .bookings-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle booking approval
+    document.querySelectorAll('.approve-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const bookingId = this.dataset.bookingId;
+            handleBookingAction(bookingId, 'approve');
+        });
+    });
+
+    // Handle booking rejection
+    document.querySelectorAll('.reject-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const bookingId = this.dataset.bookingId;
+            handleBookingAction(bookingId, 'reject');
+        });
+    });
+
+    // Handle marking notifications as read
+    document.querySelectorAll('.mark-read-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const notificationId = this.dataset.notificationId;
+            markNotificationAsRead(notificationId);
+        });
+    });
+
+    function handleBookingAction(bookingId, action) {
+        fetch(`/bookings/${bookingId}/${action}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove the booking card from the view
+                const bookingCard = document.querySelector(`[data-booking-id="${bookingId}"]`).closest('.booking-card');
+                bookingCard.remove();
+                
+                // Update the stats
+                const pendingCount = document.querySelector('.stats .count');
+                pendingCount.textContent = parseInt(pendingCount.textContent) - 1;
+                
+                // Show "no bookings" message if there are no more bookings
+                if (document.querySelectorAll('.booking-card').length === 0) {
+                    const bookingsSection = document.querySelector('.bookings-section');
+                    bookingsSection.innerHTML = `
+                        <div class="no-bookings">
+                            <p>No pending bookings at the moment.</p>
+                        </div>
+                    `;
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function markNotificationAsRead(notificationId) {
+        fetch(`/notifications/${notificationId}/mark-read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const notificationCard = document.querySelector(`[data-notification-id="${notificationId}"]`).closest('.notification-card');
+                notificationCard.classList.remove('unread');
+                
+                // Update unread notifications count
+                const notificationsCount = document.querySelector('.stats .count:last-child');
+                notificationsCount.textContent = parseInt(notificationsCount.textContent) - 1;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}
