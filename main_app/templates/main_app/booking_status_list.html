@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ title }}</h2>
+    
+    <div class="mb-3">
+        <a href="{% url 'booking_status_list' status='approved' %}" class="btn btn-success {% if status == 'approved' %}active{% endif %}">Approved Bookings</a>
+        <a href="{% url 'booking_status_list' status='rejected' %}" class="btn btn-danger {% if status == 'rejected' %}active{% endif %}">Rejected Bookings</a>
+    </div>
+
+    {% if bookings %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Package</th>
+                        <th>Customer</th>
+                        <th>Booking Date</th>
+                        <th>Guests</th>
+                        <th>Status</th>
+                        <th>Contact Email</th>
+                        <th>Contact Phone</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td>{{ booking.package.name }}</td>
+                        <td>{{ booking.user.username }}</td>
+                        <td>{{ booking.booking_date }}</td>
+                        <td>{{ booking.number_of_guests }}</td>
+                        <td>
+                            <span class="badge {% if booking.status == 'approved' %}bg-success{% elif booking.status == 'rejected' %}bg-danger{% else %}bg-warning{% endif %}">
+                                {{ booking.status|title }}
+                            </span>
+                        </td>
+                        <td>{{ booking.contact_email }}</td>
+                        <td>{{ booking.contact_phone }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No {{ status }} bookings found.
+        </div>
+    {% endif %}
+
+    <div class="mt-3">
+        <a href="{% url 'manage_bookings' %}" class="btn btn-primary">Back to Manage Bookings</a>
+    </div>
+</div>
+{% endblock %}

@@ -9,10 +9,6 @@
                 <h3>Pending Bookings</h3>
                 <p class="count">{{ pending_bookings|length }}</p>
             </div>
-            <div class="stat-card">
-                <h3>Unread Notifications</h3>
-                <p class="count">{{ notifications|length }}</p>
-            </div>
         </div>
     </div>
 
@@ -49,26 +45,7 @@
     </div>
     {% else %}
     <div class="no-bookings">
-        <p>No pending bookings at the moment.</p>
-    </div>
-    {% endif %}
-
-    {% if notifications %}
-    <div class="notifications-section">
-        <h2>Recent Notifications</h2>
-        <div class="notifications-list">
-            {% for notification in notifications %}
-            <div class="notification-card {% if not notification.is_read %}unread{% endif %}">
-                <div class="notification-content">
-                    <p>{{ notification.message }}</p>
-                    <small>{{ notification.created_at|timesince }} ago</small>
-                </div>
-                <button class="mark-read-btn" data-notification-id="{{ notification.id }}">
-                    Mark as Read
-                </button>
-            </div>
-            {% endfor %}
-        </div>
+        <p>No pending bookings at this time.</p>
     </div>
     {% endif %}
 </div>
@@ -85,39 +62,48 @@
     }
 
     .stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        display: flex;
         gap: 20px;
         margin-top: 20px;
     }
 
     .stat-card {
-        background-color: white;
+        background: #fff;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        text-align: center;
+        flex: 1;
     }
 
-    .count {
-        font-size: 2em;
-        font-weight: bold;
-        color: #007bff;
+    .stat-card h3 {
+        margin: 0;
+        color: #666;
+        font-size: 1rem;
+    }
+
+    .stat-card .count {
         margin: 10px 0 0;
+        font-size: 2rem;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .bookings-section {
+        margin-top: 30px;
     }
 
     .bookings-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 20px;
         margin-top: 20px;
     }
 
     .booking-card {
-        background-color: white;
+        background: #fff;
         border-radius: 8px;
-        padding: 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
     }
 
     .booking-header {
@@ -129,213 +115,126 @@
 
     .booking-header h3 {
         margin: 0;
-        color: #2c3e50;
+        font-size: 1.2rem;
     }
 
     .status-badge {
         padding: 4px 8px;
         border-radius: 4px;
-        font-size: 0.9em;
-        font-weight: bold;
+        font-size: 0.8rem;
+        font-weight: 500;
     }
 
     .status-pending {
-        background-color: #ffc107;
-        color: #000;
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .booking-info {
+        margin-bottom: 20px;
     }
 
     .booking-info p {
         margin: 8px 0;
-        color: #2c3e50;
+        color: #666;
+    }
+
+    .booking-info strong {
+        color: #333;
     }
 
     .booking-actions {
         display: flex;
         gap: 10px;
-        margin-top: 20px;
     }
 
-    .notifications-section {
-        margin-top: 40px;
-    }
-
-    .notifications-list {
-        display: grid;
-        gap: 15px;
-        margin-top: 20px;
-    }
-
-    .notification-card {
-        background-color: white;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .notification-card.unread {
-        border-left: 4px solid #007bff;
-    }
-
-    .notification-content {
-        flex-grow: 1;
-    }
-
-    .notification-content small {
-        display: block;
-        color: #6c757d;
-        margin-top: 5px;
-    }
-
-    .btn {
-        padding: 8px 16px;
-        border-radius: 4px;
+    .booking-actions button {
+        flex: 1;
+        padding: 8px;
         border: none;
+        border-radius: 4px;
         cursor: pointer;
         font-weight: 500;
-        transition: background-color 0.2s;
+        transition: opacity 0.2s;
     }
 
-    .btn-success {
-        background-color: #28a745;
+    .booking-actions button:hover {
+        opacity: 0.9;
+    }
+
+    .approve-btn {
+        background: #28a745;
         color: white;
     }
 
-    .btn-success:hover {
-        background-color: #218838;
-    }
-
-    .btn-danger {
-        background-color: #dc3545;
-        color: white;
-    }
-
-    .btn-danger:hover {
-        background-color: #c82333;
-    }
-
-    .mark-read-btn {
-        padding: 4px 8px;
-        border: 1px solid #007bff;
-        background: none;
-        color: #007bff;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    .mark-read-btn:hover {
-        background-color: #007bff;
+    .reject-btn {
+        background: #dc3545;
         color: white;
     }
 
     .no-bookings {
         text-align: center;
         padding: 40px;
-        background-color: white;
+        background: #fff;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    @media (max-width: 768px) {
-        .bookings-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .stats {
-            grid-template-columns: 1fr;
-        }
+    .no-bookings p {
+        color: #666;
+        margin: 0;
     }
 </style>
 
- <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Get CSRF token
-    const csrftoken = getCookie('csrftoken');
+<script>
+    // Handle booking actions (approve/reject)
+    function handleBookingAction(bookingId, action) {
+        fetch(`/bookings/BD{bookingId}/BD{action}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove the booking card from the UI
+                const bookingCard = document.querySelector(`[data-booking-id="BD{bookingId}"]`).closest('.booking-card');
+                bookingCard.remove();
 
-    // Add event listeners to all approve buttons
+                // Update the pending bookings count
+                const countElement = document.querySelector('.stat-card .count');
+                const currentCount = parseInt(countElement.textContent);
+                countElement.textContent = currentCount - 1;
+
+                // If no more bookings, show the no bookings message
+                if (currentCount - 1 === 0) {
+                    const bookingsSection = document.querySelector('.bookings-section');
+                    const noBookingsDiv = document.createElement('div');
+                    noBookingsDiv.className = 'no-bookings';
+                    noBookingsDiv.innerHTML = '<p>No pending bookings at this time.</p>';
+                    bookingsSection.replaceWith(noBookingsDiv);
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Add event listeners to buttons
     document.querySelectorAll('.approve-btn').forEach(button => {
         button.addEventListener('click', function() {
-            const bookingId = this.dataset.bookingId;
-            handleBookingAction(bookingId, 'approve');
+            handleBookingAction(this.dataset.bookingId, 'approve');
         });
     });
 
-    // Add event listeners to all reject buttons
     document.querySelectorAll('.reject-btn').forEach(button => {
         button.addEventListener('click', function() {
-            const bookingId = this.dataset.bookingId;
-            handleBookingAction(bookingId, 'reject');
+            handleBookingAction(this.dataset.bookingId, 'reject');
         });
     });
 
-    // Handle booking actions (approve/reject)
-    async function handleBookingAction(bookingId, action) {
-        try {
-            const response = await fetch(`/bookings/${bookingId}/${action}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                // Remove the booking card from the UI
-                const bookingCard = document.querySelector(`[data-booking-id="${bookingId}"]`).closest('.booking-card');
-                bookingCard.remove();
-                
-                // Update the pending bookings count
-                const pendingCount = document.querySelector('.stat-card .count');
-                const currentCount = parseInt(pendingCount.textContent);
-                pendingCount.textContent = currentCount - 1;
-
-                // Show success message
-                alert(`Booking ${action}d successfully`);
-            } else {
-                throw new Error(`Failed to ${action} booking`);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert(`Error: Failed to ${action} booking`);
-        }
-    }
-
- 
-    document.querySelectorAll('.notification').forEach(notification => {
-        notification.addEventListener('click', function() {
-            const notificationId = this.dataset.notificationId;
-            markNotificationAsRead(notificationId);
-        });
-    });
-
-    async function markNotificationAsRead(notificationId) {
-        try {
-            const response = await fetch(`/notifications/${notificationId}/mark-read/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                // Update UI to show notification as read
-                const notification = document.querySelector(`[data-notification-id="${notificationId}"]`);
-                notification.classList.add('read');
-                
-                // Update unread notifications count
-                const unreadCount = document.querySelector('.stat-card:nth-child(2) .count');
-                const currentCount = parseInt(unreadCount.textContent);
-                unreadCount.textContent = currentCount - 1;
-            }
-        } catch (error) {
-            console.error('Error marking notification as read:', error);
-        }
-    }
-
-    
+    // Helper function to get CSRF token
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -350,6 +249,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return cookieValue;
     }
-});
 </script> 
 {% endblock %}

@@ -32,7 +32,7 @@
                 {% for package in destination.package_set.all %}
                 <div class="package-card">
                     <h3>{{ package.name }}</h3>
-                    <p class="price">${{ package.price }}</p>
+                    <p class="price">BD{{ package.price }}</p>
                     <p>{{ package.description|truncatewords:30 }}</p>
                     <a href="{% url 'package_detail' package.pk %}" class="btn btn-view">View Package</a>
                 </div>

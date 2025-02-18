@@ -26,7 +26,7 @@
                 <div class="package-card">
                     <h3>{{ package.name }}</h3>
                     <p>{{ package.description|truncatewords:30 }}</p>
-                    <p class="price">Price: ${{ package.price }}</p>
+                    <p class="price">Price: BD{{ package.price }}</p>
                     <a href="{% url 'package_detail' package.pk %}" class="btn btn-primary">View Package</a>
                 </div>
                 {% endfor %}

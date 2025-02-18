@@ -5,7 +5,7 @@
     <div class="booking-header">
         <h1>Book Your Trip</h1>
         <p class="package-info">Package: {{ package.name }}</p>
-        <p class="price-info">Price per person: ${{ package.price }}</p>
+        <p class="price-info">Price per person: BD{{ package.price }}</p>
     </div>
 
     <form method="post" class="booking-form">
@@ -46,7 +46,7 @@
 
         <div class="price-calculator">
             <h3>Total Price:</h3>
-            <p id="totalPrice">$0.00</p>
+            <p id="totalPrice">BD0.00</p>
         </div>
 
         <div class="form-actions">
@@ -198,7 +198,7 @@
         function updateTotalPrice() {
             const numberOfGuests = parseInt(guestsInput.value) || 0;
             const totalPrice = numberOfGuests * pricePerPerson;
-            totalPriceElement.textContent = `$${totalPrice.toFixed(2)}`;
+            totalPriceElement.textContent = `BD ${totalPrice.toFixed(2)}`;
         }
 
         guestsInput.addEventListener('input', updateTotalPrice);

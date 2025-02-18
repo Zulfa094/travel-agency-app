@@ -41,12 +41,11 @@
         </div>
 
         <div class="form-group">
-            <label for="{{ form.spots_per_date.id_for_label }}">Spots Per Date:</label>
-            {{ form.spots_per_date }}
-            {% if form.spots_per_date.errors %}
-            <div class="error-message">{{ form.spots_per_date.errors }}</div>
+            <label for="{{ form.total_spots.id_for_label }}">Total Spots:</label>
+            {{ form.total_spots }}
+            {% if form.total_spots.errors %}
+            <div class="error-message">{{ form.total_spots.errors }}</div>
             {% endif %}
-            <small class="help-text">Maximum number of spots available for each date</small>
         </div>
 
         <div class="form-group">

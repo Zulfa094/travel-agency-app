@@ -3,51 +3,31 @@
 
 {% block content %}
 
-{% comment %} <div class="hero-section">
-    <div class="hero-content">
-        <h1 class="hero-title">Discover Amazing Destinations</h1>
-        <div class="search-bar">
-            <div class="search-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <input type="text" placeholder="Where to?">
+{% if user.is_authenticated and notifications %}
+<div class="notifications-section">
+    <h3>Recent Notifications</h3>
+    <div class="notifications-list">
+        {% for notification in notifications %}
+        <div class="notification-item" id="notification-{{ notification.id }}">
+            <div class="notification-content">
+                <p>{{ notification.message }}</p>
+                <small>{{ notification.created_at|timesince }} ago</small>
             </div>
-            <div class="search-item">
-                <i class="fas fa-calendar"></i>
-                <input type="date">
-            </div>
-            <div class="search-item">
-                <i class="fas fa-user"></i>
-                </option>
-                </select>
-            </div>
-            <button class="search-button">Search</button>
-        </div>
-    </div>
-</div> {% endcomment %}
-
-<!-- Popular Destinations Section -->
-<section class="destinations-section">
-    <h2>Popular Destinations</h2>
-    <div class="destinations-grid">
-        {% for destination in destinations %}
-        <div class="destination-card">
-            <div class="destination-image" style="background-image: url('{{ destination.image_url|default:'https://via.placeholder.com/300x200' }}')">
-                <div class="destination-overlay">
-                    <h3>{{ destination.name }}</h3>
-                    <p>{{ destination.description|truncatewords:20 }}</p>
-                </div>
-            </div>
+            <form action="{% url 'mark_notification_read' notification.id %}" method="POST" class="mark-read-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-secondary mark-read-btn">
+                    Mark as Read
+                </button>
+            </form>
         </div>
         {% endfor %}
     </div>
-</section>
+</div>
+{% endif %}
 
-<!-- Interactive Map Section -->
-<section class="map-section">
-    <h2>Explore our map</h2>
-    <div id="destinations-map"></div>
-</section>
 
+    </div>
+</section>
 
 <section class="travelers-choice">
     <h2>Trip Packages</h2>
@@ -67,60 +47,58 @@
 </section>
 
 <style>
-    /* Hero Section */
-    .hero-section {
-        height: 80vh;
-        background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('path_to_your_hero_image.jpg');
-        background-size: cover;
-        background-position: center;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-    }
-
-    .hero-content {
-        text-align: center;
+    /* Notifications Section */
+    .notifications-section {
         max-width: 800px;
+        margin: 20px auto;
         padding: 20px;
     }
 
-    .hero-title {
-        font-size: 3.5rem;
-        margin-bottom: 2rem;
-    }
-
-    /* Search Bar */
-    .search-bar {
-        display: flex;
+    .notifications-list {
         background: white;
-        padding: 20px;
-        border-radius: 10px;
-        gap: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: hidden;
     }
 
-    .search-item {
-        flex: 1;
+    .notification-item {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 10px;
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.3s;
     }
 
-    .search-item input,
-    .search-item select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
+    .notification-item:last-child {
+        border-bottom: none;
     }
 
-    .search-button {
-        background: #FF6B6B;
-        color: white;
-        padding: 10px 30px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
+    .notification-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .notification-content {
+        flex: 1;
+    }
+
+    .notification-content p {
+        margin: 0;
+        color: #333;
+    }
+
+    .notification-content small {
+        color: #6c757d;
+        font-size: 0.85em;
+    }
+
+    .mark-read-btn {
+        padding: 4px 8px;
+        font-size: 0.85em;
+    }
+
+    .mark-read-form {
+        margin-left: 15px;
     }
 
     /* Destinations Grid */
@@ -155,112 +133,136 @@
         left: 0;
         right: 0;
         background: linear-gradient(transparent, rgba(0,0,0,0.8));
-        padding: 20px;
         color: white;
+        padding: 20px;
     }
 
-    /* Map Section */
-    .map-section {
-        padding: 50px 20px;
+    .destination-overlay h3 {
+        margin: 0 0 10px;
     }
 
-    #destinations-map {
-        height: 500px;
-        border-radius: 10px;
-        margin-top: 30px;
+    .destination-overlay p {
+        margin: 0;
+        font-size: 0.9em;
+        opacity: 0.9;
     }
 
-    /* Travelers' Choice */
+    /* Trip Packages Section */
     .travelers-choice {
         padding: 50px 20px;
+        background: #f8f9fa;
     }
 
     .choice-slider {
-        display: flex;
-        overflow-x: auto;
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 20px;
-        padding: 20px 0;
     }
 
     .choice-card {
-        min-width: 600px;
-        display: flex;
-        background: #f8f9fa;
+        background: white;
         border-radius: 10px;
         overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
     }
 
     .choice-content {
+        padding: 20px;
         flex: 1;
-        padding: 30px;
-        position: relative;
     }
 
     .choice-number {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        font-size: 2rem;
-        color: #FF6B6B;
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        background: #FF6B6B;
+        color: white;
+        text-align: center;
+        line-height: 30px;
+        border-radius: 50%;
+        margin-bottom: 10px;
     }
 
     .choice-image {
-        flex: 1;
+        height: 200px;
         background-size: cover;
         background-position: center;
     }
 
     .see-details {
         display: inline-block;
-        margin-top: 20px;
-        padding: 10px 20px;
-        background: #FF6B6B;
-        color: white;
+        margin-top: 15px;
+        color: #FF6B6B;
         text-decoration: none;
-        border-radius: 5px;
+        font-weight: 500;
+    }
+
+    .see-details:hover {
+        text-decoration: underline;
     }
 
     @media (max-width: 768px) {
-        .search-bar {
-            flex-direction: column;
+        .destinations-grid {
+            grid-template-columns: 1fr;
         }
 
-        .choice-card {
-            min-width: 100%;
-            flex-direction: column;
-        }
-
-        .choice-image {
-            height: 200px;
+        .choice-slider {
+            grid-template-columns: 1fr;
         }
     }
 </style>
 
 <script>
-    // Initialize map
-    const map = L.map('destinations-map').setView([0, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    const csrftoken = getCookie('csrftoken');
 
-    // Add markers for destinations
-    const destinations = [
-        {% for destination in destinations %}
-            {
-                name: "{{ destination.name }}",
-                lat: {{ destination.latitude|default:0 }},
-                lng: {{ destination.longitude|default:0 }},
-                description: "{{ destination.description|truncatewords:20 }}"
-            },
-        {% endfor %}
-    ];
+    const notificationsList = document.querySelector('.notifications-list');
+    if (notificationsList) {
+        notificationsList.addEventListener('click', function(e) {
+            if (e.target.classList.contains('mark-read-btn')) {
+                e.preventDefault();
+                const form = e.target.closest('form');
+                const notificationItem = e.target.closest('.notification-item');
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        notificationItem.style.opacity = '0';
+                        setTimeout(() => {
+                            notificationItem.remove();
+                            if (notificationsList.children.length === 0) {
+                                document.querySelector('.notifications-section').remove();
+                            }
+                        }, 300);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+    }
 
-    destinations.forEach(dest => {
-        if (dest.lat && dest.lng) {
-            L.marker([dest.lat, dest.lng])
-                .bindPopup(`<h3>${dest.name}</h3><p>${dest.description}</p>`)
-                .addTo(map);
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
         }
-    });
+        return cookieValue;
+    }
 </script>
+
 {% endblock %}

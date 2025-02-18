@@ -21,7 +21,7 @@ class Package(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     destinations = models.ManyToManyField(Destination)
     available_dates = models.TextField(default='[]')  
-    spots_per_date = models.PositiveIntegerField(default=10)
+    total_spots = models.PositiveIntegerField(default=10)  
 
     def get_available_dates(self):
         import json
@@ -41,25 +41,21 @@ class Package(models.Model):
         self.set_available_dates(dates)
         self.save()
 
-    def get_spots_available(self, date):
-        """Get number of spots available for a specific date"""
+    def get_spots_available(self):
+        """Get total number of spots available for the package"""
         from django.db.models import Sum
         
-        if str(date) not in self.get_available_dates():
-            return 0
-            
         booked_spots = self.bookings.filter(
-            booking_date=date,
             status__in=['pending', 'approved']
         ).aggregate(
             total=Sum('number_of_guests')
         )['total'] or 0
         
-        return max(0, self.spots_per_date - booked_spots)
+        return max(0, self.total_spots - booked_spots)
 
-    def is_fully_booked(self, date):
-        """Check if a specific date is fully booked"""
-        return self.get_spots_available(date) == 0
+    def is_fully_booked(self):
+        """Check if the package is fully booked"""
+        return self.get_spots_available() == 0
 
     def __str__(self):
         return self.name
@@ -101,15 +97,20 @@ class Booking(models.Model):
                 total_guests=models.Sum('number_of_guests')
             )['total_guests'] or 0
             
-            if current_bookings + self.number_of_guests > self.package.spots_per_date:
+            if current_bookings + self.number_of_guests > self.package.get_spots_available():
                 raise ValidationError('Not enough spots available for this date')
-    
+
+    @property
+    def total_price(self):
+        """Calculate the total price for all guests"""
+        return self.package.price * self.number_of_guests
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"{self.user.username}'s booking for {self.package.name} on {self.booking_date}"
+        return f"Booking {self.id} - {self.user.username} - {self.package.name}"
 
     def get_absolute_url(self):
         return reverse('booking_detail', kwargs={'pk': self.pk})

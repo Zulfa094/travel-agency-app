@@ -33,9 +33,9 @@ urlpatterns = [
     path('bookings/<int:pk>/delete/', views.BookingDelete.as_view(), name='booking_delete'),
     
     # Booking Management
-    path('manage/bookings/', views.ManageBookings.as_view(), name='manage_bookings'),
+    path('manage/bookings/', views.manage_bookings, name='manage_bookings'),
     path('bookings/<int:booking_id>/approve/', views.approve_booking, name='approve_booking'),
     path('bookings/<int:booking_id>/reject/', views.reject_booking, name='reject_booking'),
     path('notifications/<int:notification_id>/mark-read/', views.mark_notification_read, name='mark_notification_read'),
-    path('manage-bookings/', views.ManageBookings.as_view(), name='manage_bookings'),
+    path('bookings/status/<str:status>/', views.BookingStatusList.as_view(), name='booking_status_list'),
 ]
