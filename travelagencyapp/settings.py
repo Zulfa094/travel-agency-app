@@ -122,6 +122,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Media files (Uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Auth settings
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'

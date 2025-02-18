@@ -1,10 +1,185 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Create New Package</h1>
-    <form method="post">
+<div class="form-container">
+    <h1>{% if object %}Edit{% else %}New{% endif %} Package</h1>
+    
+    <form method="post" class="package-form">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create</button>
+        
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Name:</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+            <div class="error-message">{{ form.name.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">Description:</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+            <div class="error-message">{{ form.description.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.price.id_for_label }}">Price:</label>
+            {{ form.price }}
+            {% if form.price.errors %}
+            <div class="error-message">{{ form.price.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.destinations.id_for_label }}">Destinations:</label>
+            {{ form.destinations }}
+            {% if form.destinations.errors %}
+            <div class="error-message">{{ form.destinations.errors }}</div>
+            {% endif %}
+            {% comment %} <small class="help-text">Hold Ctrl (Windows) or Command (Mac) to select multiple destinations.</small> {% endcomment %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.spots_per_date.id_for_label }}">Spots Per Date:</label>
+            {{ form.spots_per_date }}
+            {% if form.spots_per_date.errors %}
+            <div class="error-message">{{ form.spots_per_date.errors }}</div>
+            {% endif %}
+            <small class="help-text">Maximum number of spots available for each date</small>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.start_date.id_for_label }}">Start Date:</label>
+            {{ form.start_date }}
+            {% if form.start_date.errors %}
+            <div class="error-message">{{ form.start_date.errors }}</div>
+            {% endif %}
+            <small class="help-text">{{ form.start_date.help_text }}</small>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.end_date.id_for_label }}">End Date:</label>
+            {{ form.end_date }}
+            {% if form.end_date.errors %}
+            <div class="error-message">{{ form.end_date.errors }}</div>
+            {% endif %}
+            <small class="help-text">{{ form.end_date.help_text }}</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% if object %}Update{% else %}Create{% endif %} Package</button>
+            {% if object %}
+                <a href="{% url 'package_detail' object.pk %}" class="btn btn-secondary">Cancel</a>
+            {% else %}
+                <a href="{% url 'package_list' %}" class="btn btn-secondary">Cancel</a>
+            {% endif %}
+        </div>
     </form>
+</div>
+
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .package-form {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    textarea,
+    select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    select[multiple] {
+        height: 200px;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 0.9em;
+        margin-top: 5px;
+    }
+
+    .help-text {
+        display: block;
+        margin-top: 5px;
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+
+    @media (max-width: 768px) {
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            margin: 5px 0;
+        }
+    }
+</style>
 {% endblock %}

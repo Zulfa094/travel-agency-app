@@ -45,24 +45,16 @@
             background-color: rgba(255,255,255,0.1);
         }
 
-        .logout-form {
-            margin: 0;
-            padding: 0;
-        }
-
         .logout-btn {
-            background: none;
-            border: none;
-            font-size: 1em;
-            cursor: pointer;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
+          color: white;
+          text-decoration: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
         }
 
         .logout-btn:hover {
-            background-color: rgba(255,255,255,0.1);
+          background-color: rgba(255,255,255,0.1);
         }
 
         @media (max-width: 768px) {
@@ -81,14 +73,10 @@
                 gap: 10px;
             }
 
-            .nav-link, .logout-btn {
+            .nav-link {
                 width: 100%;
                 text-align: center;
                 padding: 10px;
-            }
-
-            .logout-form {
-                width: 100%;
             }
         }
     </style>
@@ -100,6 +88,9 @@
           <a href="{% url 'home' %}">Travel Agency</a>
         </div>
         <div class="nav-links">
+          <a href="{% url 'home' %}" class="nav-link">Home</a>
+          <a href="{% url 'package_list' %}" class="nav-link">Packages</a>
+          <a href="{% url 'destination_list' %}" class="nav-link">Destinations</a>
           {% if user.is_authenticated %}
             {% if user.is_superuser %}
             <a href="{% url 'manage_bookings' %}" class="nav-link">Manage Bookings</a>
@@ -108,9 +99,9 @@
             {% else %}
             <a href="{% url 'booking_list' %}" class="nav-link">My Bookings</a>
             {% endif %}
-            <form method="post" action="{% url 'logout' %}" class="logout-form">
-              {% csrf_token %}
-              <button type="submit" class="nav-link logout-btn">Log Out</button>
+            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Logout</button>
             </form>
           {% else %}
             <a href="{% url 'signup' %}" class="nav-link">Sign Up</a>

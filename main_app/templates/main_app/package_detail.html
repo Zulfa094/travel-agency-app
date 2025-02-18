@@ -23,6 +23,25 @@
                 <h2>Price</h2>
                 <p class="price">${{ object.price }}</p>
             </div>
+
+            <div class="availability-section">
+                <h2>Availability</h2>
+                {% if date_range %}
+                    <div class="date-range">
+                        <p>Available from <strong>{{ date_range.start|date:"F d, Y" }}</strong> to <strong>{{ date_range.end|date:"F d, Y" }}</strong></p>
+                    </div>
+
+                    {% if user.is_authenticated and not user.is_superuser %}
+                        {% if has_available_spots %}
+                            <a href="{% url 'booking_create' object.pk %}" class="btn btn-primary book-now">Book This Package</a>
+                        {% else %}
+                            <button class="btn btn-secondary" disabled>Fully Booked</button>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                    <p>No available dates for this package.</p>
+                {% endif %}
+            </div>
         </div>
 
         <div class="destinations-section">
@@ -49,9 +68,6 @@
                     <div class="destination-image">
                         <img src="{{ destination.image_url }}" alt="{{ destination.name }}">
                     </div>
-                    {% endif %}
-                    {% if user.is_authenticated and not user.is_superuser %}
-                    <a href="{% url 'booking_create' object.pk %}" class="btn btn-primary">Book This Package</a>
                     {% endif %}
                 </div>
                 {% empty %}
@@ -230,6 +246,32 @@
         justify-content: center;
         gap: 10px;
         margin-top: 20px;
+    }
+
+    .availability-section {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .date-range {
+        background: #fff;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        border: 1px solid #e9ecef;
+    }
+
+    .date-range p {
+        margin: 0;
+        font-size: 1.1em;
+    }
+
+    .book-now {
+        margin-top: 1rem;
+        display: inline-block;
     }
 
     @media (max-width: 768px) {

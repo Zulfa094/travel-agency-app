@@ -249,9 +249,12 @@
     }
 </style>
 
-<script>
+ <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle booking approval
+    // Get CSRF token
+    const csrftoken = getCookie('csrftoken');
+
+    // Add event listeners to all approve buttons
     document.querySelectorAll('.approve-btn').forEach(button => {
         button.addEventListener('click', function() {
             const bookingId = this.dataset.bookingId;
@@ -259,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Handle booking rejection
+    // Add event listeners to all reject buttons
     document.querySelectorAll('.reject-btn').forEach(button => {
         button.addEventListener('click', function() {
             const bookingId = this.dataset.bookingId;
@@ -267,69 +270,72 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Handle marking notifications as read
-    document.querySelectorAll('.mark-read-btn').forEach(button => {
-        button.addEventListener('click', function() {
+    // Handle booking actions (approve/reject)
+    async function handleBookingAction(bookingId, action) {
+        try {
+            const response = await fetch(`/bookings/${bookingId}/${action}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // Remove the booking card from the UI
+                const bookingCard = document.querySelector(`[data-booking-id="${bookingId}"]`).closest('.booking-card');
+                bookingCard.remove();
+                
+                // Update the pending bookings count
+                const pendingCount = document.querySelector('.stat-card .count');
+                const currentCount = parseInt(pendingCount.textContent);
+                pendingCount.textContent = currentCount - 1;
+
+                // Show success message
+                alert(`Booking ${action}d successfully`);
+            } else {
+                throw new Error(`Failed to ${action} booking`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Error: Failed to ${action} booking`);
+        }
+    }
+
+ 
+    document.querySelectorAll('.notification').forEach(notification => {
+        notification.addEventListener('click', function() {
             const notificationId = this.dataset.notificationId;
             markNotificationAsRead(notificationId);
         });
     });
 
-    function handleBookingAction(bookingId, action) {
-        fetch(`/bookings/${bookingId}/${action}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Remove the booking card from the view
-                const bookingCard = document.querySelector(`[data-booking-id="${bookingId}"]`).closest('.booking-card');
-                bookingCard.remove();
-                
-                // Update the stats
-                const pendingCount = document.querySelector('.stats .count');
-                pendingCount.textContent = parseInt(pendingCount.textContent) - 1;
-                
-                // Show "no bookings" message if there are no more bookings
-                if (document.querySelectorAll('.booking-card').length === 0) {
-                    const bookingsSection = document.querySelector('.bookings-section');
-                    bookingsSection.innerHTML = `
-                        <div class="no-bookings">
-                            <p>No pending bookings at the moment.</p>
-                        </div>
-                    `;
+    async function markNotificationAsRead(notificationId) {
+        try {
+            const response = await fetch(`/notifications/${notificationId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
                 }
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
+            });
 
-    function markNotificationAsRead(notificationId) {
-        fetch(`/notifications/${notificationId}/mark-read/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                const notificationCard = document.querySelector(`[data-notification-id="${notificationId}"]`).closest('.notification-card');
-                notificationCard.classList.remove('unread');
+            if (response.ok) {
+                // Update UI to show notification as read
+                const notification = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                notification.classList.add('read');
                 
                 // Update unread notifications count
-                const notificationsCount = document.querySelector('.stats .count:last-child');
-                notificationsCount.textContent = parseInt(notificationsCount.textContent) - 1;
+                const unreadCount = document.querySelector('.stat-card:nth-child(2) .count');
+                const currentCount = parseInt(unreadCount.textContent);
+                unreadCount.textContent = currentCount - 1;
             }
-        })
-        .catch(error => console.error('Error:', error));
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
     }
 
+    
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -345,5 +351,5 @@ document.addEventListener('DOMContentLoaded', function() {
         return cookieValue;
     }
 });
-</script>
+</script> 
 {% endblock %}

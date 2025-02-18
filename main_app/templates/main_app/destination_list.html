@@ -1,54 +1,64 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="packages-container">
+<div class="destinations-container">
     <div class="page-header">
-        <h1>Travel Packages</h1>
+        <h1>Destinations</h1>
         {% if is_superuser %}
-        <a href="{% url 'package_create' %}" class="btn btn-success">Add New Package</a>
+        <a href="{% url 'destination_create' %}" class="btn btn-success">Add New Destination</a>
         {% endif %}
     </div>
 
-    <div class="packages-grid">
-        {% for package in packages %}
-        <div class="package-card">
-            {% if package.destinations.first.image %}
-            <div class="package-image">
-                <img src="{{ package.destinations.first.image.url }}" alt="{{ package.name }}">
+    <div class="destinations-grid">
+        {% for destination in destinations %}
+        <div class="destination-card">
+            {% if destination.image %}
+            <div class="destination-image">
+                <img src="{{ destination.image.url }}" alt="{{ destination.name }}">
             </div>
             {% endif %}
             
-            <div class="package-content">
-                <h2>{{ package.name }}</h2>
-                <p class="description">{{ package.description|truncatewords:30 }}</p>
-                <p class="price">${{ package.price }}</p>
+            <div class="destination-content">
+                <h2>{{ destination.name }}</h2>
+                <p class="description">{{ destination.description|truncatewords:30 }}</p>
                 
-                <div class="destinations-preview">
-                    <h3>Destinations:</h3>
+                {% if destination.latitude and destination.longitude %}
+                <div class="location-info">
+                    <p><strong>Location:</strong> {{ destination.latitude }}, {{ destination.longitude }}</p>
+                </div>
+                {% endif %}
+
+                <div class="packages-preview">
+                    <h3>Available in Packages:</h3>
                     <ul>
-                        {% for destination in package.destinations.all|slice:":3" %}
-                        <li>{{ destination.name }}</li>
+                        {% for package in destination.package_set.all|slice:":3" %}
+                        <li>
+                            {{ package.name }}
+                            <span class="package-price">${{ package.price }}</span>
+                        </li>
+                        {% empty %}
+                        <li>Not included in any packages yet</li>
                         {% endfor %}
-                        {% if package.destinations.count > 3 %}
-                        <li>+ {{ package.destinations.count|add:"-3" }} more...</li>
+                        {% if destination.package_set.count > 3 %}
+                        <li>+ {{ destination.package_set.count|add:"-3" }} more packages...</li>
                         {% endif %}
                     </ul>
                 </div>
 
                 <div class="card-actions">
-                    <a href="{% url 'package_detail' package.pk %}" class="btn btn-primary">View Details</a>
+                    <a href="{% url 'destination_detail' destination.pk %}" class="btn btn-primary">View Details</a>
                     {% if is_superuser %}
-                    <a href="{% url 'package_update' package.pk %}" class="btn btn-warning">Edit</a>
-                    <button onclick="confirmDelete('package', {{ package.pk }}, '{{ package.name }}')" class="btn btn-danger">Delete</button>
+                    <a href="{% url 'destination_update' destination.pk %}" class="btn btn-warning">Edit</a>
+                    <button onclick="confirmDelete('destination', {{ destination.pk }}, '{{ destination.name }}')" class="btn btn-danger">Delete</button>
                     {% endif %}
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="no-packages">
-            <p>No packages available yet.</p>
+        <div class="no-destinations">
+            <p>No destinations available yet.</p>
             {% if is_superuser %}
-            <a href="{% url 'package_create' %}" class="btn btn-success">Create First Package</a>
+            <a href="{% url 'destination_create' %}" class="btn btn-success">Create First Destination</a>
             {% endif %}
         </div>
         {% endfor %}
@@ -56,25 +66,25 @@
 </div>
 
 {% if is_superuser %}
-<!-- Delete Package Modal -->
-<div id="packageDeleteModal" class="modal">
+<!-- Delete Destination Modal -->
+<div id="destinationDeleteModal" class="modal">
     <div class="modal-content">
-        <h2>Confirm Package Deletion</h2>
-        <p id="packageDeleteMessage"></p>
-        <p class="warning">This action cannot be undone and will remove all associated bookings.</p>
+        <h2>Confirm Destination Deletion</h2>
+        <p id="destinationDeleteMessage"></p>
+        <p class="warning">This action cannot be undone.</p>
         <div class="modal-buttons">
-            <form id="packageDeleteForm" method="post">
+            <form id="destinationDeleteForm" method="post">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger">Delete</button>
             </form>
-            <button onclick="closeModal('package')" class="btn btn-secondary">Cancel</button>
+            <button onclick="closeModal('destination')" class="btn btn-secondary">Cancel</button>
         </div>
     </div>
 </div>
 {% endif %}
 
 <style>
-    .packages-container {
+    .destinations-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
@@ -87,13 +97,13 @@
         margin-bottom: 30px;
     }
 
-    .packages-grid {
+    .destinations-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
         gap: 30px;
     }
 
-    .package-card {
+    .destination-card {
         background: white;
         border-radius: 8px;
         overflow: hidden;
@@ -101,26 +111,26 @@
         transition: transform 0.2s;
     }
 
-    .package-card:hover {
+    .destination-card:hover {
         transform: translateY(-5px);
     }
 
-    .package-image {
+    .destination-image {
         height: 200px;
         overflow: hidden;
     }
 
-    .package-image img {
+    .destination-image img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .package-content {
+    .destination-content {
         padding: 20px;
     }
 
-    .package-content h2 {
+    .destination-content h2 {
         margin: 0 0 10px 0;
         color: #333;
     }
@@ -130,35 +140,43 @@
         margin-bottom: 15px;
     }
 
-    .price {
-        color: #28a745;
-        font-size: 1.5em;
-        font-weight: bold;
+    .location-info {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
         margin: 15px 0;
     }
 
-    .destinations-preview {
+    .packages-preview {
         margin: 15px 0;
         padding: 15px;
         background: #f8f9fa;
         border-radius: 4px;
     }
 
-    .destinations-preview h3 {
+    .packages-preview h3 {
         margin: 0 0 10px 0;
         font-size: 1.1em;
         color: #555;
     }
 
-    .destinations-preview ul {
+    .packages-preview ul {
         list-style: none;
         padding: 0;
         margin: 0;
     }
 
-    .destinations-preview li {
+    .packages-preview li {
         margin: 5px 0;
         color: #666;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .package-price {
+        color: #28a745;
+        font-weight: bold;
     }
 
     .card-actions {
@@ -202,7 +220,7 @@
         color: white;
     }
 
-    .no-packages {
+    .no-destinations {
         grid-column: 1 / -1;
         text-align: center;
         padding: 40px;
@@ -250,7 +268,7 @@
             text-align: center;
         }
 
-        .packages-grid {
+        .destinations-grid {
             grid-template-columns: 1fr;
         }
 
@@ -267,12 +285,12 @@
 
 <script>
     function confirmDelete(type, id, name) {
-        const modal = document.getElementById('packageDeleteModal');
-        const message = document.getElementById('packageDeleteMessage');
-        const form = document.getElementById('packageDeleteForm');
+        const modal = document.getElementById('destinationDeleteModal');
+        const message = document.getElementById('destinationDeleteMessage');
+        const form = document.getElementById('destinationDeleteForm');
         
         message.textContent = `Are you sure you want to delete ${name}?`;
-        form.action = `/packages/${id}/delete/`;
+        form.action = `/destinations/${id}/delete/`;
         modal.style.display = 'block';
     }
 

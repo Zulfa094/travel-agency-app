@@ -15,8 +15,8 @@ urlpatterns = [
 
     # CBV's for Create, Update, Delete Package
     path('packages/create/', views.PackageCreate.as_view(), name='package_create'),
-    path('packages/<int:pk>/update', views.PackageUpdate.as_view(), name='package_update'),
-    path('packages/<int:pk>/delete', views.PackageDelete.as_view(), name='package_delete'),
+    path('packages/<int:pk>/update/', views.PackageUpdate.as_view(), name='package_update'),
+    path('packages/<int:pk>/delete/', views.PackageDelete.as_view(), name='package_delete'),
     path('packages/<int:pk>/', views.PackageDetail.as_view(), name='package_detail'),
     path('packages/', views.PackageList.as_view(), name='package_list'),
 
@@ -24,7 +24,8 @@ urlpatterns = [
     path('destinations/create/', views.DestinationCreate.as_view(), name='destination_create'),
     path('destinations/<int:pk>/update/', views.DestinationUpdate.as_view(), name='destination_update'),
     path('destinations/<int:pk>/delete/', views.DestinationDelete.as_view(), name='destination_delete'),
-    path('destinations/<int:pk>', views.DestinationDetail.as_view(), name='destination_detail'),
+    path('destinations/<int:pk>/', views.DestinationDetail.as_view(), name='destination_detail'),
+    path('destinations/', views.DestinationList.as_view(), name='destination_list'),
 
     path('bookings/create/<int:package_id>/', views.BookingCreate.as_view(), name='booking_create'),
     path('bookings/', views.BookingList.as_view(), name='booking_list'),

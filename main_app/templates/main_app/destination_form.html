@@ -2,40 +2,44 @@
 
 {% block content %}
 <div class="form-container">
-    <h1>{% if object %}Edit{% else %}Create{% endif %} Destination</h1>
-
-    <form method="POST">
+    <h1>{% if object %}Edit{% else %}New{% endif %} Destination</h1>
+    
+    <form method="post" enctype="multipart/form-data" class="destination-form">
         {% csrf_token %}
         
-        {% if form.non_field_errors %}
-        <div class="alert alert-danger">
-            {% for error in form.non_field_errors %}
-                {{ error }}
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        {% for field in form %}
         <div class="form-group">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}
-            <div class="field-error">
-                {% for error in field.errors %}
-                    {{ error }}
-                {% endfor %}
+            <label for="{{ form.name.id_for_label }}">Name:</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+            <div class="error-message">{{ form.name.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">Description:</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+            <div class="error-message">{{ form.description.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.image.id_for_label }}">Image:</label>
+            {% if object and object.image %}
+            <div class="current-image">
+                <img src="{{ object.image.url }}" alt="{{ object.name }}" class="preview-image">
+                <p>Current image: {{ object.image.name }}</p>
             </div>
             {% endif %}
-            {% if field.help_text %}
-            <small class="help-text">{{ field.help_text }}</small>
+            {{ form.image }}
+            {% if form.image.errors %}
+            <div class="error-message">{{ form.image.errors }}</div>
             {% endif %}
+            <div id="image-preview"></div>
         </div>
-        {% endfor %}
 
-        <div class="button-group">
-            <button type="submit" class="btn btn-primary">
-                {% if object %}Update{% else %}Create{% endif %} Destination
-            </button>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% if object %}Update{% else %}Create{% endif %} Destination</button>
             <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
@@ -43,62 +47,90 @@
 
 <style>
     .form-container {
-        max-width: 600px;
-        margin: 2rem auto;
-        padding: 2rem;
-        background: #fff;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .destination-form {
+        background: white;
+        padding: 30px;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 20px;
     }
 
-    .form-group label {
+    .form-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .half-width {
+        flex: 1;
+    }
+
+    label {
         display: block;
-        margin-bottom: 0.5rem;
-        font-weight: bold;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #333;
     }
 
-    .form-group input,
-    .form-group textarea {
+    input[type="text"],
+    input[type="number"],
+    textarea {
         width: 100%;
-        padding: 0.5rem;
+        padding: 8px 12px;
         border: 1px solid #ddd;
         border-radius: 4px;
-        font-size: 1rem;
+        font-size: 16px;
     }
 
-    .form-group textarea {
+    textarea {
         min-height: 100px;
+        resize: vertical;
     }
 
-    .field-error {
+    .error-message {
         color: #dc3545;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
+        font-size: 0.9em;
+        margin-top: 5px;
     }
 
-    .help-text {
-        color: #6c757d;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
+    .current-image {
+        margin: 10px 0;
     }
 
-    .button-group {
-        margin-top: 2rem;
+    .preview-image {
+        max-width: 200px;
+        max-height: 200px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin: 10px 0;
+    }
+
+    #image-preview {
+        margin-top: 10px;
+    }
+
+    .form-actions {
         display: flex;
-        gap: 1rem;
+        gap: 10px;
+        margin-top: 30px;
     }
 
     .btn {
-        padding: 0.5rem 1rem;
+        padding: 10px 20px;
         border: none;
         border-radius: 4px;
         cursor: pointer;
+        font-weight: 500;
         text-decoration: none;
-        font-size: 1rem;
+        text-align: center;
     }
 
     .btn-primary {
@@ -106,29 +138,49 @@
         color: white;
     }
 
-    .btn-primary:hover {
-        background-color: #0056b3;
-    }
-
     .btn-secondary {
         background-color: #6c757d;
         color: white;
     }
 
-    .btn-secondary:hover {
-        background-color: #545b62;
-    }
+    @media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
 
-    .alert {
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 4px;
-    }
+        .half-width {
+            width: 100%;
+        }
 
-    .alert-danger {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
     }
 </style>
+
+<script>
+    // Image preview functionality
+    document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+        const preview = document.getElementById('image-preview');
+        preview.innerHTML = '';
+        
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('preview-image');
+                preview.appendChild(img);
+            }
+            
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+</script>
 {% endblock %}
