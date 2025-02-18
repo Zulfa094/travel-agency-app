@@ -20,7 +20,7 @@ class Package(models.Model):
     description = models.TextField(max_length=250)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     destinations = models.ManyToManyField(Destination)
-    available_dates = models.TextField(default='[]')  # Store as JSON string
+    available_dates = models.TextField(default='[]')  
     spots_per_date = models.PositiveIntegerField(default=10)
 
     def get_available_dates(self):

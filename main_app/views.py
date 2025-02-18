@@ -244,7 +244,7 @@ class PackageDetail(DetailView):
                 'end': end_date
             }
             
-            # Process individual dates for availability
+           
             for date_str in sorted_dates:
                 date = datetime.strptime(date_str, '%Y-%m-%d').date()
                 spots = package.get_spots_available(date)
@@ -299,7 +299,7 @@ class BookingForm(forms.ModelForm):
                 .annotate(total_guests=Sum('number_of_guests'))
             )
             
-            # Create a dict of date -> total guests
+           
             booked_guests = {
                 str(booking['booking_date']): booking['total_guests']
                 for booking in bookings_by_date
