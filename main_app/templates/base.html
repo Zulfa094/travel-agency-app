@@ -11,20 +11,34 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: white;
+        }
+
         .navbar {
-            background-color: #2c3e50;
+            background-color: white;
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .nav-brand a {
-            color: white;
+            color: #1a73e8;
             font-size: 1.5rem;
             text-decoration: none;
             font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .nav-brand a:hover {
+            color: #1557b0;
         }
 
         .nav-links {
@@ -34,27 +48,44 @@
         }
 
         .nav-link {
-            color: white;
+            color: #5f6368;
             text-decoration: none;
             padding: 8px 16px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
+            border-radius: 24px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
         }
 
         .nav-link:hover {
-            background-color: rgba(255,255,255,0.1);
+            background-color: #f1f3f4;
+            color: #1a73e8;
+        }
+
+        .nav-link.active {
+            background-color: #e8f0fe;
+            color: #1a73e8;
         }
 
         .logout-btn {
-          color: white;
-          text-decoration: none;
-          padding: 8px 16px;
-          border-radius: 4px;
-          transition: background-color 0.2s;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 24px;
+            transition: all 0.3s ease;
+            background-color: #1a73e8;
+            font-weight: 500;
+            font-size: 0.95rem;
         }
 
         .logout-btn:hover {
-          background-color: rgba(255,255,255,0.1);
+            background-color: #1557b0;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         @media (max-width: 768px) {
@@ -77,6 +108,13 @@
                 width: 100%;
                 text-align: center;
                 padding: 10px;
+                border-radius: 8px;
+            }
+
+            .logout-btn {
+                width: 100%;
+                text-align: center;
+                margin-top: 10px;
             }
         }
     </style>

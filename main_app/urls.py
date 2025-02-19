@@ -8,7 +8,6 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', views.Home.as_view(), name='home'),  
-    path('about/', views.about, name='about'),
     path('login/', auth_views.LoginView.as_view(template_name='accounts/templates/registration/login.html'), name='login'),
     path('signup/', views.signup, name='signup'),
 
@@ -27,9 +26,10 @@ urlpatterns = [
     path('destinations/<int:pk>/', views.DestinationDetail.as_view(), name='destination_detail'),
     path('destinations/', views.DestinationList.as_view(), name='destination_list'),
 
-    path('bookings/create/<int:package_id>/', views.BookingCreate.as_view(), name='booking_create'),
+    path('bookings/create/<int:package_pk>/', views.BookingCreate.as_view(), name='booking_create'),
     path('bookings/', views.BookingList.as_view(), name='booking_list'),
     path('bookings/<int:pk>/', views.BookingDetail.as_view(), name='booking_detail'),
+    path('bookings/<int:pk>/update/', views.BookingUpdate.as_view(), name='booking_update'),
     path('bookings/<int:pk>/delete/', views.BookingDelete.as_view(), name='booking_delete'),
     
     # Booking Management

@@ -16,7 +16,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from datetime import datetime
 from django.urls import reverse_lazy
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 
 def is_superuser(user):
     return user.is_authenticated and user.is_superuser
@@ -66,17 +66,6 @@ class Home(ListView):
         
         return context
     
-        
-       
-        # if self.request.user.is_authenticated and self.request.user.is_superuser:
-        #     context['pending_bookings'] = Booking.objects.filter(status='pending')
-        #     context['notifications'] = Notification.objects.filter(
-        #         recipient=self.request.user,
-        #         is_for_superuser=True,
-        #         is_read=False
-        #     ).order_by('-created_at')
-        
-        # return context
 
 def about(request):
     return render(request, 'about.html')
@@ -304,14 +293,16 @@ class BookingForm(forms.ModelForm):
             self.fields['package'].initial = package.id
             self.fields['package'].widget = forms.HiddenInput()
             
-            # Get all bookings for each date
+            # Get all bookings for each date (including pending and approved)
             bookings_by_date = (
-                Booking.objects.filter(package=package)
+                Booking.objects.filter(
+                    package=package,
+                    status__in=['pending', 'approved']
+                )
                 .values('booking_date')
                 .annotate(total_guests=Sum('number_of_guests'))
             )
             
-           
             booked_guests = {
                 str(booking['booking_date']): booking['total_guests']
                 for booking in bookings_by_date
@@ -330,10 +321,41 @@ class BookingForm(forms.ModelForm):
                             (date_str, f"{date_obj.strftime('%B %d, %Y')} ({spots_left} spots left)")
                         )
             
-            self.fields['booking_date'] = forms.ChoiceField(
-                choices=available_dates,
-                widget=forms.Select(attrs={'class': 'form-control'})
-            )
+            if not available_dates:
+                self.fields['booking_date'] = forms.ChoiceField(
+                    choices=[('', 'No available dates')],
+                    widget=forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'})
+                )
+            else:
+                self.fields['booking_date'] = forms.ChoiceField(
+                    choices=available_dates,
+                    widget=forms.Select(attrs={'class': 'form-control'})
+                )
+                
+            # Store package for validation
+            self.package = package
+
+    def clean(self):
+        cleaned_data = super().clean()
+        booking_date = cleaned_data.get('booking_date')
+        number_of_guests = cleaned_data.get('number_of_guests')
+
+        if booking_date and number_of_guests and hasattr(self, 'package'):
+            # Get current bookings for the selected date
+            current_bookings = Booking.objects.filter(
+                package=self.package,
+                booking_date=booking_date,
+                status__in=['pending', 'approved']
+            ).aggregate(
+                total_guests=Sum('number_of_guests')
+            )['total_guests'] or 0
+
+            spots_left = self.package.total_spots - current_bookings
+
+            if number_of_guests > spots_left:
+                raise ValidationError(f'Only {spots_left} spots available for this date. Please select fewer guests or choose another date.')
+
+        return cleaned_data
 
 class BookingCreate(LoginRequiredMixin, CreateView):
     model = Booking
@@ -342,43 +364,73 @@ class BookingCreate(LoginRequiredMixin, CreateView):
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
-        self.package = get_object_or_404(Package, pk=kwargs.get('package_id'))
+        self.package = get_object_or_404(Package, pk=kwargs.get('package_pk'))
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['package'] = self.package
-        if self.request.method == 'POST':
-            data = self.request.POST.copy()
-            data['package'] = self.package.id
-            kwargs['data'] = data
         return kwargs
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         form.instance.package = self.package
         form.instance.status = 'pending'
-        response = super().form_valid(form)
+        response = super().form_valid(form)  # This will save the object and set self.object
 
-        # Create notification for superusers
-        superusers = User.objects.filter(is_superuser=True)
-        for superuser in superusers:
-            Notification.objects.create(
-                recipient=superuser,
-                message=f'New booking request from {self.request.user.username} for {self.package.name}',
-                booking=form.instance,
-                is_for_superuser=True
-            )
+        # Create notification for admin
+        Notification.objects.create(
+            recipient=User.objects.filter(is_superuser=True).first(),
+            message=f'New booking request from {self.request.user.username} for {self.package.name}',
+            booking=self.object
+        )
 
-        messages.success(self.request, 'Booking created successfully! Waiting for approval.')
+        messages.success(self.request, 'Your booking has been created successfully! Waiting for approval.')
         return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['package'] = self.package
+        context['is_update'] = False
         return context
 
     def get_success_url(self):
         return reverse('booking_detail', kwargs={'pk': self.object.pk})
+
+class BookingUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Booking
+    form_class = BookingForm
+    template_name = 'main_app/booking_form.html'
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.object = self.get_object()
+        self.package = self.object.package
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['package'] = self.package
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['package'] = self.package
+        context['is_update'] = True
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.user = request.user
+            booking.package = self.package
+            booking.save()
+            return redirect('booking_detail', pk=booking.pk)
+        return self.form_invalid(form)
+
+    def test_func(self):
+        booking = self.get_object()
+        return booking.user == self.request.user and booking.status == 'pending'
 
 class BookingDetail(LoginRequiredMixin, DetailView):
     model = Booking
@@ -457,8 +509,8 @@ def approve_booking(request, booking_id):
             booking=booking
         )
         
-        messages.success(request, 'Booking approved successfully!')
-    return redirect('booking_status_list', status='approved')
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'Booking is not pending'})
 
 @login_required
 @user_passes_test(is_superuser)
@@ -475,8 +527,8 @@ def reject_booking(request, booking_id):
             booking=booking
         )
         
-        messages.success(request, 'Booking rejected successfully!')
-    return redirect('booking_status_list', status='rejected')
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'Booking is not pending'})
 
 @login_required
 @require_POST

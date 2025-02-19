@@ -187,28 +187,30 @@
 </style>
 
 <script>
-    // Handle booking actions (approve/reject)
     function handleBookingAction(bookingId, action) {
-        fetch(`/bookings/BD{bookingId}/BD{action}/`, {
+        const csrftoken = getCookie('csrftoken');
+        fetch(`/bookings/${bookingId}/${action}/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
         })
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
                 // Remove the booking card from the UI
-                const bookingCard = document.querySelector(`[data-booking-id="BD{bookingId}"]`).closest('.booking-card');
+                const bookingCard = document.querySelector(`[data-booking-id="${bookingId}"]`).closest('.booking-card');
                 bookingCard.remove();
-
-                // Update the pending bookings count
+                
+                // Update the pending count
                 const countElement = document.querySelector('.stat-card .count');
                 const currentCount = parseInt(countElement.textContent);
                 countElement.textContent = currentCount - 1;
-
-                // If no more bookings, show the no bookings message
+                
+                // If no more bookings, show the "no bookings" message
                 if (currentCount - 1 === 0) {
                     const bookingsSection = document.querySelector('.bookings-section');
                     const noBookingsDiv = document.createElement('div');
@@ -216,25 +218,33 @@
                     noBookingsDiv.innerHTML = '<p>No pending bookings at this time.</p>';
                     bookingsSection.replaceWith(noBookingsDiv);
                 }
+            } else {
+                alert(data.message || 'Failed to process booking. Please try again.');
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
     }
 
     // Add event listeners to buttons
     document.querySelectorAll('.approve-btn').forEach(button => {
         button.addEventListener('click', function() {
-            handleBookingAction(this.dataset.bookingId, 'approve');
+            if (confirm('Are you sure you want to approve this booking?')) {
+                handleBookingAction(this.dataset.bookingId, 'approve');
+            }
         });
     });
 
     document.querySelectorAll('.reject-btn').forEach(button => {
         button.addEventListener('click', function() {
-            handleBookingAction(this.dataset.bookingId, 'reject');
+            if (confirm('Are you sure you want to reject this booking?')) {
+                handleBookingAction(this.dataset.bookingId, 'reject');
+            }
         });
     });
 
-    // Helper function to get CSRF token
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -249,5 +259,5 @@
         }
         return cookieValue;
     }
-</script> 
+</script>
 {% endblock %}

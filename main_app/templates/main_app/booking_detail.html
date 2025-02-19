@@ -41,6 +41,11 @@
         <div class="status-message {% if object.status == 'pending' %}pending{% elif object.status == 'approved' %}approved{% else %}rejected{% endif %}">
             {% if object.status == 'pending' %}
                 <p>Your booking is currently under review. We will notify you once it's approved.</p>
+                {% if not user.is_superuser %}
+                    <div class="user-actions">
+                        <a href="{% url 'booking_update' object.pk %}" class="btn btn-primary">Edit Booking</a>
+                    </div>
+                {% endif %}
                 {% if user.is_superuser %}
                     <div class="admin-actions">
                         <form method="post" action="{% url 'approve_booking' booking_id=object.id %}" class="inline-form">
@@ -216,6 +221,15 @@
 
     .btn-danger:hover {
         background-color: #c82333;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
     }
 </style>
 {% endblock %}
