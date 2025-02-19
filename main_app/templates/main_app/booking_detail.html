@@ -17,8 +17,8 @@
 
         <div class="booking-info">
             <p><strong>Booking Date:</strong> {{ object.booking_date }}</p>
-            <p><strong>Number of Guests:</strong> {{ object.number_of_guests }}</p>
-            <p><strong>Price per Guest:</strong> BD{{ object.package.price }}</p>
+            <p><strong>Number of People:</strong> {{ object.number_of_guests }}</p>
+            <p><strong>Price per Person:</strong> BD{{ object.package.price }}</p>
             <p><strong>Total Price:</strong> BD{{ object.total_price }}</p>
             <p><strong>Contact Email:</strong> {{ object.contact_email }}</p>
             {% if object.contact_phone %}

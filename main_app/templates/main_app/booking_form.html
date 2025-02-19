@@ -26,12 +26,12 @@
             </div>
 
             <div class="form-group">
-                <label for="{{ form.number_of_guests.id_for_label }}" class="form-label">Number of Guests:</label>
+                <label for="{{ form.number_of_guests.id_for_label }}" class="form-label">Number of People:</label>
                 {{ form.number_of_guests }}
                 {% if form.number_of_guests.errors %}
                 <div class="error-message">{{ form.number_of_guests.errors }}</div>
                 {% endif %}
-                <small class="help-text">Maximum 10 guests per booking</small>
+                {% comment %} <small class="help-text">Maximum 10 guests per booking</small> {% endcomment %}
             </div>
 
             <div class="form-group">
