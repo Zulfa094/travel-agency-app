@@ -32,7 +32,6 @@ class Package(models.Model):
         self.available_dates = json.dumps(dates)
 
     def add_available_dates(self, start_date, end_date):
-        """Add a range of available dates to the package"""
         current = start_date
         dates = []
         while current <= end_date:
@@ -42,7 +41,6 @@ class Package(models.Model):
         self.save()
 
     def get_spots_available(self):
-        """Get total number of spots available for the package"""
         from django.db.models import Sum
         
         booked_spots = self.bookings.filter(

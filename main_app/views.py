@@ -184,7 +184,6 @@ class PackageCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        # Add available dates after package is created
         self.object.add_available_dates(
             form.cleaned_data['start_date'],
             form.cleaned_data['end_date']
@@ -201,7 +200,6 @@ class PackageUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_initial(self):
         initial = super().get_initial()
-        # Get the first and last date from available_dates
         dates = self.object.get_available_dates()
         if dates:
             initial['start_date'] = datetime.strptime(dates[0], '%Y-%m-%d').date()
@@ -239,10 +237,9 @@ class PackageDetail(DetailView):
         context = super().get_context_data(**kwargs)
         package = self.object
         
-        # Convert dates to proper format and add availability info
+       
         dates = package.get_available_dates()
         if dates:
-            # Sort dates chronologically
             sorted_dates = sorted(dates)
             start_date = datetime.strptime(sorted_dates[0], '%Y-%m-%d').date()
             end_date = datetime.strptime(sorted_dates[-1], '%Y-%m-%d').date()
@@ -251,7 +248,7 @@ class PackageDetail(DetailView):
                 'end': end_date
             }
 
-        # Check if user has already booked this package
+        
         if self.request.user.is_authenticated and not self.request.user.is_superuser:
             user_booking = Booking.objects.filter(
                 user=self.request.user,
@@ -293,7 +290,7 @@ class BookingForm(forms.ModelForm):
             self.fields['package'].initial = package.id
             self.fields['package'].widget = forms.HiddenInput()
             
-            # Get all bookings for each date (including pending and approved)
+          
             bookings_by_date = (
                 Booking.objects.filter(
                     package=package,
@@ -308,7 +305,7 @@ class BookingForm(forms.ModelForm):
                 for booking in bookings_by_date
             }
             
-            # Filter available dates and create choices
+           
             today = timezone.now().date()
             available_dates = []
             for date_str in package.get_available_dates():
@@ -332,7 +329,7 @@ class BookingForm(forms.ModelForm):
                     widget=forms.Select(attrs={'class': 'form-control'})
                 )
                 
-            # Store package for validation
+           
             self.package = package
 
     def clean(self):
@@ -375,7 +372,7 @@ class BookingCreate(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         form.instance.package = self.package
         form.instance.status = 'pending'
-        response = super().form_valid(form)  # This will save the object and set self.object
+        response = super().form_valid(form)  
 
         # Create notification for admin
         Notification.objects.create(
